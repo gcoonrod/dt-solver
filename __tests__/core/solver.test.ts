@@ -1,0 +1,1 @@
+// stub - unit tests for the solver module. Will eventually test that the solver correctly computes signal timings based on the provided constraints and timing profiles, and that it handles edge cases and invalid inputs gracefully.

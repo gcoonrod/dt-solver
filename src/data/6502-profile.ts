@@ -1,0 +1,1 @@
+// stub - 6502 timing profile data

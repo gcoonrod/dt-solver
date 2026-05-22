@@ -1,0 +1,1 @@
+// Stub - D3 timeline Visualization component. Will eventually render the clock and data signals as SVG elements, and handle zooming/panning/scrolling interactions.
