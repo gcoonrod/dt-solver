@@ -1,2 +1,2 @@
 export * from "./signal";
-export * from "./constaint";
+export * from "./constraint";
