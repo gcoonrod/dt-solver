@@ -1,4 +1,4 @@
-# MVP Roadmap: Digital Timing Solver
+# MVP Roadmap: DT Solver
 
 This document outlines the Minimum Viable Product (MVP) phases for the client-side digital circuit timing constraint solver. The architecture separates the core constraint-solving math from the React/D3 visualization layer to ensure high testability.
 

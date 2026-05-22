@@ -1,30 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dt-solver
+
+`dt-solver` is a client-side digital circuit timing constraint solver and interactive visualization tool. It is designed to help hardware developers map, visualize, and validate AC characteristics (like setup times, hold times, and propagation delays) across different integrated circuits. 
+
+Whether you are analyzing read/write overlaps on a custom 6502 single-board computer or debugging asynchronous bus cycles for an eZ80, `dt-solver` provides instantaneous visual feedback to ensure your digital logic timing margins are mathematically sound.
+
+## Core Features
+
+* **Interactive Waveform Canvas:** A highly granular, zoomable timeline built with D3.js to visualize standard clocks and discrete data buses.
+* **Real-Time Constraint Solving:** Powered by a pure-TypeScript graph traversal engine that calculates timing margins entirely in the browser.
+* **Conflict Detection:** Automatically evaluates constraints against current signal states and visually flags setup/hold violations.
+* **Decoupled Architecture:** The core mathematical solver is strictly separated from the React presentation layer, ensuring high testability and performance.
+
+## Tech Stack
+
+* **Framework:** [Next.js](https://nextjs.org) (App Router)
+* **State Management:** [Zustand](https://zustand-demo.pmnd.rs/) (for high-performance, cross-component state without Context re-renders)
+* **Visualization:** [D3.js](https://d3js.org/)
+* **Styling:** Tailwind CSS
+* **Language:** TypeScript
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies and run the development server:
 
 ```bash
+pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application. The UI will automatically update as you edit the source files.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* `src/core/` - The pure-TypeScript solving engine and validation logic (No React dependencies).
+* `src/types/` - Strict domain models for Signals, Constraints, and Events.
+* `src/store/` - The Zustand state store bridging the solver engine and the UI.
+* `src/components/canvas/` - D3.js rendering hooks and waveform SVG components.
+* `src/components/panels/` - React UI components for the component library and constraint inspector.
+* `src/data/` - Hardcoded mock profiles for specific ICs.
 
-## Learn More
+## Testing
 
-To learn more about Next.js, take a look at the following resources:
+Because the core solving engine is completely decoupled from the DOM and React, all constraint math and graph traversals can be tested via pure unit tests.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Because `dt-solver` handles all constraint calculations entirely client-side, it requires no backend API. It can be easily deployed via the [Vercel Platform](https://vercel.com/new) or exported as a static site to be hosted on any standard web server.
