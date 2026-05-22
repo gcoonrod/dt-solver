@@ -17,8 +17,11 @@ const SIG_H = 24;
 export const HEADER_H = 36;
 const LEFT_PAD = 18;
 const RIGHT_PAD = 32;
-const EDGE_SLOPE = 1.2;
-const BUS_X_SLOPE = 3;
+// Pixel offset used only for *zero-slew* edges so they don't render as a
+// perfectly vertical line (purely cosmetic / anti-aliasing). Sloped edges
+// derive their width from the signal's rise/fall time instead.
+const ZERO_SLEW_PX = 1.2;
+const ZERO_SLEW_BUS_PX = 3;
 
 // ---- colors ---------------------------------------------------------------
 const SCOPE_BG = "#0a0e14";
@@ -306,10 +309,12 @@ function ClockTrace({ sig, yTop, sigH, tMin, tMax, tToX }: ClockTraceProps) {
   let y = v0 ? yHigh : yLow;
   const pts: [number, number][] = [[tToX(tMin), y]];
   for (const e of edges) {
-    const x = tToX(e.timeNs);
-    pts.push([x - EDGE_SLOPE, y]);
+    const isZeroSlew = e.endNs === e.startNs;
+    const xS = isZeroSlew ? tToX(e.midNs) - ZERO_SLEW_PX : tToX(e.startNs);
+    const xE = isZeroSlew ? tToX(e.midNs) + ZERO_SLEW_PX : tToX(e.endNs);
+    pts.push([xS, y]);
     y = e.direction === "RISING" ? yHigh : yLow;
-    pts.push([x + EDGE_SLOPE, y]);
+    pts.push([xE, y]);
   }
   pts.push([tToX(tMax), y]);
   const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]} ${p[1]}`).join(" ");
@@ -329,10 +334,18 @@ function LineTrace({ sig, yTop, sigH, tMin, tMax, tToX }: LineTraceProps) {
   const pts: [number, number][] = [[tToX(tMin), y]];
   for (const tr of sig.transitions) {
     if (tr.timeNs <= tMin || tr.timeNs > tMax) continue;
-    const x = tToX(tr.timeNs);
-    pts.push([x - EDGE_SLOPE, y]);
+    const slew =
+      tr.direction === "RISING"
+        ? sig.riseTimeNs ?? 0
+        : tr.direction === "FALLING"
+          ? sig.fallTimeNs ?? 0
+          : Math.max(sig.riseTimeNs ?? 0, sig.fallTimeNs ?? 0);
+    const isZeroSlew = slew === 0;
+    const xS = isZeroSlew ? tToX(tr.timeNs) - ZERO_SLEW_PX : tToX(tr.timeNs - slew / 2);
+    const xE = isZeroSlew ? tToX(tr.timeNs) + ZERO_SLEW_PX : tToX(tr.timeNs + slew / 2);
+    pts.push([xS, y]);
     y = tr.newState === "HIGH" ? yHigh : yLow;
-    pts.push([x + EDGE_SLOPE, y]);
+    pts.push([xE, y]);
   }
   pts.push([tToX(tMax), y]);
   const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0]} ${p[1]}`).join(" ");
@@ -355,6 +368,13 @@ function BusTrace({ sig, yTop, sigH, tMin, tMax, tToX }: BusTraceProps) {
   const yHigh = yTop;
   const yLow = yTop + sigH;
   const yMid = yTop + sigH / 2;
+
+  // Bus transitions are direction=TRANSITION; the solver treats their slew as
+  // max(rise, fall). Mirror that here so the X marker width matches the
+  // conservative interval the solver evaluates against.
+  const busSlewNs = Math.max(sig.riseTimeNs ?? 0, sig.fallTimeNs ?? 0);
+  const halfSlewPx = (t: number) =>
+    busSlewNs === 0 ? ZERO_SLEW_BUS_PX : (tToX(t + busSlewNs / 2) - tToX(t - busSlewNs / 2)) / 2;
 
   const initial = stateAt(sig, tMin);
   let prevT = tMin;
@@ -382,8 +402,10 @@ function BusTrace({ sig, yTop, sigH, tMin, tMax, tToX }: BusTraceProps) {
     const x2 = tToX(seg.to);
     const isFirst = i === 0;
     const isLast = i === segs.length - 1;
-    const xS = isFirst ? x1 : x1 + BUS_X_SLOPE;
-    const xE = isLast ? x2 : x2 - BUS_X_SLOPE;
+    const leftHalf = isFirst ? 0 : halfSlewPx(seg.from);
+    const rightHalf = isLast ? 0 : halfSlewPx(seg.to);
+    const xS = x1 + leftHalf;
+    const xE = x2 - rightHalf;
     const w = Math.max(0, xE - xS);
 
     const isHiZ = seg.state === "HIGH_Z";
@@ -445,12 +467,13 @@ function BusTrace({ sig, yTop, sigH, tMin, tMax, tToX }: BusTraceProps) {
 
     if (!isLast) {
       const xc = tToX(seg.to);
+      const xHalf = halfSlewPx(seg.to);
       const next = segs[i + 1];
       const dim = isHiZ || next.state === "HIGH_Z" || isInv || next.state === "INVALID";
       elems.push(
         <path
           key={`x${i}`}
-          d={`M${xc - BUS_X_SLOPE} ${yHigh} L${xc + BUS_X_SLOPE} ${yLow} M${xc - BUS_X_SLOPE} ${yLow} L${xc + BUS_X_SLOPE} ${yHigh}`}
+          d={`M${xc - xHalf} ${yHigh} L${xc + xHalf} ${yLow} M${xc - xHalf} ${yLow} L${xc + xHalf} ${yHigh}`}
           stroke={sig.color}
           strokeWidth="1.5"
           opacity={dim ? 0.55 : 1}

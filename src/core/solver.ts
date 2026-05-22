@@ -4,6 +4,7 @@ import type {
   AnySignal,
   ClockSignal,
   EdgeDirection,
+  EdgeInterval,
   SignalState,
   TransitionEvent,
 } from "@/types/signal";
@@ -14,14 +15,28 @@ export function periodNs(mhz: number): number {
   return 1000 / mhz;
 }
 
-export interface ClockEdge {
-  timeNs: number;
-  direction: EdgeDirection;
+export type ClockEdge = EdgeInterval;
+
+function slewFor(signal: AnySignal, direction: EdgeDirection): number {
+  if (direction === "RISING") return signal.riseTimeNs ?? 0;
+  if (direction === "FALLING") return signal.fallTimeNs ?? 0;
+  // TRANSITION (bus-style state change): use the larger of rise/fall so the
+  // worst-case window is conservative for both directions of slew.
+  return Math.max(signal.riseTimeNs ?? 0, signal.fallTimeNs ?? 0);
+}
+
+function intervalAt(
+  midNs: number,
+  direction: EdgeDirection,
+  slewNs: number,
+): EdgeInterval {
+  const half = slewNs / 2;
+  return { startNs: midNs - half, midNs, endNs: midNs + half, direction };
 }
 
 /**
- * Generate the absolute rising/falling edge timestamps for a clock over a
- * given time window. Edges are returned in chronological order.
+ * Generate the absolute rising/falling edge intervals for a clock over a
+ * given time window. Edges are returned in chronological order by `midNs`.
  */
 export function generateClockEdges(
   clock: ClockSignal,
@@ -38,11 +53,15 @@ export function generateClockEdges(
     const rise = phase + k * T;
     const fall = rise + highDur;
     if (rise > tMaxNs + T) break;
-    if (rise >= tMinNs && rise <= tMaxNs) edges.push({ timeNs: rise, direction: "RISING" });
-    if (fall >= tMinNs && fall <= tMaxNs) edges.push({ timeNs: fall, direction: "FALLING" });
+    if (rise >= tMinNs && rise <= tMaxNs) {
+      edges.push(intervalAt(rise, "RISING", slewFor(clock, "RISING")));
+    }
+    if (fall >= tMinNs && fall <= tMaxNs) {
+      edges.push(intervalAt(fall, "FALLING", slewFor(clock, "FALLING")));
+    }
     k++;
   }
-  return edges.sort((a, b) => a.timeNs - b.timeNs);
+  return edges.sort((a, b) => a.midNs - b.midNs);
 }
 
 export interface SignalSample {
@@ -72,15 +91,13 @@ export function stateAt(signal: AnySignal, timeNs: number): SignalSample {
   return { state, value };
 }
 
-export interface ResolvedEvent {
-  timeNs: number;
-  direction: EdgeDirection;
+export interface ResolvedEvent extends EdgeInterval {
   newState?: SignalState;
   value?: string;
 }
 
 /**
- * Resolve a SignalReference to the list of matching event timestamps in the
+ * Resolve a SignalReference to the list of matching event intervals in the
  * chosen window. If `occurrenceIndex` is supplied, returns at most one;
  * otherwise returns all matches so the solver can find the worst case.
  */
@@ -96,8 +113,7 @@ export function resolveReference(
     events = signal.transitions
       .filter((tr: TransitionEvent) => tr.timeNs >= 0 && tr.timeNs <= tMaxNs)
       .map((tr: TransitionEvent) => ({
-        timeNs: tr.timeNs,
-        direction: tr.direction,
+        ...intervalAt(tr.timeNs, tr.direction, slewFor(signal, tr.direction)),
         newState: tr.newState,
         value: tr.value,
       }));
@@ -115,12 +131,19 @@ interface WorstCase {
   margin: number;
   anchor: ResolvedEvent;
   target: ResolvedEvent;
+  anchorTimeNs: number;
+  targetTimeNs: number;
 }
 
 /**
  * Forward-propagation constraint evaluator. Considers every anchor occurrence
  * and pairs it with the most-relevant target event for the constraint type.
  * Reports the worst-case margin (the one that determines PASS/FAIL).
+ *
+ * Edge endpoint selection (conservative worst-case per spec):
+ *   SETUP:      anchor.startNs ↔ target.endNs
+ *   HOLD:       anchor.endNs   ↔ target.startNs
+ *   PROP_DELAY: anchor.endNs   ↔ target.endNs
  */
 export function evaluateConstraint(
   constraint: Constraint,
@@ -138,43 +161,45 @@ export function evaluateConstraint(
   if (!anchorEvts.length) return { ...constraint, status: "UNRESOLVED" };
 
   let worst: WorstCase | null = null;
-  const considerWorse = (
-    margin: number,
-    kind: Constraint["type"],
-    anchor: ResolvedEvent,
-    target: ResolvedEvent,
-  ) => {
+  const considerWorse = (next: WorstCase, kind: Constraint["type"]) => {
     if (!worst) {
-      worst = { margin, anchor, target };
+      worst = next;
       return;
     }
     // SETUP / HOLD: lower margin = worse.  PROP_DELAY: higher margin = worse.
-    if (kind === "PROP_DELAY" ? margin > worst.margin : margin < worst.margin) {
-      worst = { margin, anchor, target };
+    if (kind === "PROP_DELAY" ? next.margin > worst.margin : next.margin < worst.margin) {
+      worst = next;
     }
   };
 
   for (const a of anchorEvts) {
     let pick: ResolvedEvent | undefined;
+    let aPoint = 0;
+    let tPoint = 0;
     let margin = NaN;
 
     if (constraint.type === "SETUP") {
+      aPoint = a.startNs;
       // Target should occur strictly before anchor; prefer transition→VALID.
-      let cands = targetEvts.filter((e) => e.timeNs < a.timeNs);
+      let cands = targetEvts.filter((e) => e.endNs < aPoint);
       if (targetSig.type === "DATA") {
         const valid = cands.filter((e) => e.newState === "VALID");
         if (valid.length) cands = valid;
       }
       pick = cands[cands.length - 1];
       if (!pick) continue;
-      margin = a.timeNs - pick.timeNs;
+      tPoint = pick.endNs;
+      margin = aPoint - tPoint;
     } else if (constraint.type === "HOLD") {
-      const cands = targetEvts.filter((e) => e.timeNs > a.timeNs);
+      aPoint = a.endNs;
+      const cands = targetEvts.filter((e) => e.startNs > aPoint);
       pick = cands[0];
       if (!pick) continue;
-      margin = pick.timeNs - a.timeNs;
+      tPoint = pick.startNs;
+      margin = tPoint - aPoint;
     } else if (constraint.type === "PROP_DELAY") {
-      const cands = targetEvts.filter((e) => e.timeNs > a.timeNs);
+      aPoint = a.endNs;
+      const cands = targetEvts.filter((e) => e.endNs > aPoint);
       if (targetSig.type === "DATA") {
         const valid = cands.find((e) => e.newState === "VALID");
         pick = valid ?? cands[0];
@@ -182,13 +207,17 @@ export function evaluateConstraint(
         pick = cands[0];
       }
       if (!pick) continue;
-      margin = pick.timeNs - a.timeNs;
+      tPoint = pick.endNs;
+      margin = tPoint - aPoint;
     } else {
       // MIN_PULSE / CYCLE_TIME — not implemented in MVP yet.
       continue;
     }
 
-    considerWorse(margin, constraint.type, a, pick);
+    considerWorse(
+      { margin, anchor: a, target: pick, anchorTimeNs: aPoint, targetTimeNs: tPoint },
+      constraint.type,
+    );
   }
 
   if (!worst) return { ...constraint, status: "UNRESOLVED" };
@@ -203,8 +232,8 @@ export function evaluateConstraint(
     status: pass ? "PASS" : "FAIL",
     calculatedMarginNs: w.margin,
     worstWindow: {
-      anchorTimeNs: w.anchor.timeNs,
-      targetTimeNs: w.target.timeNs,
+      anchorTimeNs: w.anchorTimeNs,
+      targetTimeNs: w.targetTimeNs,
     },
   };
 }

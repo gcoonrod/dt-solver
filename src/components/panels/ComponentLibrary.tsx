@@ -60,6 +60,13 @@ export function IconCL({ name, size = 14, className = "", strokeWidth = 1.75 }: 
 const signalIconName = (type: AnySignal["type"]): string =>
   type === "CLOCK" ? "square-wave" : "pulse";
 
+function formatSlewMeta(rise: number | undefined, fall: number | undefined): string | null {
+  if ((rise == null || rise === 0) && (fall == null || fall === 0)) return null;
+  const r = rise ?? 0;
+  const f = fall ?? 0;
+  return r === f ? `${r}ns` : `${r}/${f}ns`;
+}
+
 // ---- logo ----------------------------------------------------------------
 function DtSolverLogo() {
   return (
@@ -216,12 +223,14 @@ interface SignalRowCLProps {
 
 function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
   const [hover, setHover] = useState(false);
-  const meta =
+  const baseMeta =
     sig.type === "CLOCK"
       ? `${sig.frequencyMHz}M`
       : sig.widthBits
         ? `[${sig.widthBits - 1}:0]`
         : "1b";
+  const slewMeta = formatSlewMeta(sig.riseTimeNs, sig.fallTimeNs);
+  const meta = slewMeta ? `${baseMeta} · ${slewMeta}` : baseMeta;
   return (
     <li
       onClick={onClick}

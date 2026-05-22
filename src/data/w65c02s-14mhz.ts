@@ -2,6 +2,11 @@
 // AC characteristics modeled per the WDC datasheet (approximate; values intended
 // to exercise the solver with one realistic FAIL case for the demo scene).
 //
+// All edges carry rise/fall time (`riseTimeNs`/`fallTimeNs`) so the solver
+// works at conservative endpoints (anchor.startNs / target.endNs for setup).
+// Transition timestamps below name the *50%* midpoint of each edge; the
+// physical edge spans midNs ± slew/2.
+//
 // Period @ 14 MHz: T = 71.43 ns. The scene captures the first two PHI2 cycles
 // (a read followed by a write).
 //
@@ -24,6 +29,8 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
     frequencyMHz: 14,
     dutyCycle: 0.5,
     phaseOffsetNs: 0,
+    riseTimeNs: 2,
+    fallTimeNs: 2,
   },
   {
     id: "addr",
@@ -33,6 +40,8 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
     color: "#f59e0b",
     widthBits: 16,
     baseState: "INVALID",
+    riseTimeNs: 3,
+    fallTimeNs: 3,
     transitions: [
       { id: "addr-1", timeNs: 0,    newState: "INVALID", direction: "TRANSITION", value: "----" },
       { id: "addr-2", timeNs: 15,   newState: "VALID",   direction: "TRANSITION", value: "0xC000" },
@@ -47,9 +56,11 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
     description: "Read (high) / write (low)",
     color: "#a78bfa",
     baseState: "HIGH",
+    riseTimeNs: 3,
+    fallTimeNs: 3,
     transitions: [
       { id: "rw-1", timeNs: 0,  newState: "HIGH", direction: "RISING",  value: "1" },
-      { id: "rw-2", timeNs: 86, newState: "LOW",  direction: "FALLING", value: "0" },
+      { id: "rw-2", timeNs: 83, newState: "LOW",  direction: "FALLING", value: "0" },
     ],
   },
   {
@@ -60,11 +71,13 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
     color: "#f472b6",
     widthBits: 8,
     baseState: "HIGH_Z",
+    riseTimeNs: 3,
+    fallTimeNs: 3,
     transitions: [
       { id: "data-1", timeNs: 0,   newState: "HIGH_Z", direction: "TRANSITION" },
-      { id: "data-2", timeNs: 25,  newState: "VALID",  direction: "TRANSITION", value: "0xA9" },
+      { id: "data-2", timeNs: 22,  newState: "VALID",  direction: "TRANSITION", value: "0xA9" },
       { id: "data-3", timeNs: 50,  newState: "HIGH_Z", direction: "TRANSITION" },
-      { id: "data-4", timeNs: 95,  newState: "VALID",  direction: "TRANSITION", value: "0x55" },
+      { id: "data-4", timeNs: 93,  newState: "VALID",  direction: "TRANSITION", value: "0x55" },
       { id: "data-5", timeNs: 130, newState: "HIGH_Z", direction: "TRANSITION" },
     ],
   },
@@ -75,6 +88,8 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
     description: "Chip select (active low)",
     color: "#a3e635",
     baseState: "HIGH",
+    riseTimeNs: 3,
+    fallTimeNs: 3,
     transitions: [
       { id: "cs-1", timeNs: 0,   newState: "HIGH", direction: "RISING"  },
       { id: "cs-2", timeNs: 8,   newState: "LOW",  direction: "FALLING" },
