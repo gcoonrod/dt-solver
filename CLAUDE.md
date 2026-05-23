@@ -30,6 +30,10 @@ Test infrastructure is split into two projects in a single `vitest.config.ts` (`
 
 GitHub Actions runs `lint`, `build`, and `test` as three parallel jobs on every push to `main`/`develop` and every PR targeting either. The workflow lives at `.github/workflows/ci.yml`; Node is pinned to `24` (current latest LTS, satisfies the `>= 20` floor from the `logic-path-tests` capability) and pnpm comes from the `packageManager` field in `package.json`. Required-status-check gating is a separate repo-admin setting, not part of the workflow file.
 
+## Dependencies
+
+Dependabot opens **one grouped PR per ecosystem per week** (npm + github-actions) on Monday mornings PT — config at `.github/dependabot.yml`. Major npm bumps are intentionally **not** auto-PR'd (React 19 → 20, etc. should land as their own coordinated changes); GitHub Actions majors flow through because they're typically Node-runtime tweaks rather than API breaks. **Security updates** fire independently of the schedule and may include majors — they require two GitHub-UI toggles to stay enabled: Settings → Code security → "Dependabot alerts" and "Dependabot security updates".
+
 ## Architecture
 
 The product is a client-side digital-circuit timing constraint solver and waveform visualizer (see `README.md` and `ROADMAP.md` for the product story). The architecture is deliberately three-layered to keep the math pure and testable:
