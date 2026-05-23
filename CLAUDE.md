@@ -17,8 +17,9 @@ Package manager is **pnpm** (see `pnpm-workspace.yaml` and the `packageManager` 
 | Production build | `pnpm build` |
 | Production serve | `pnpm start` |
 | Lint | `pnpm lint` (ESLint 9 flat config, extends `eslint-config-next/core-web-vitals` + `/typescript`) |
+| Logic-path tests | `pnpm test:logic` (Vitest 3, node environment; watch via `pnpm test:logic:watch`) |
 
-**No test runner is wired up yet.** The README mentions `pnpm test` and the ROADMAP references Jest/Vitest, but neither is installed and there is no `test` script in `package.json`. The files under `__tests__/` are `// stub` placeholders. If you need to add tests, you'll first need to pick and install a runner — confirm the choice with the user.
+Test infrastructure is split into two paths. The **logic path** is wired up: Vitest runs every `__tests__/**/*.test.ts` file in `environment: 'node'`. Tests under `__tests__/` MUST NOT import React, the DOM, D3, or anything in `src/components/` — the `logic` Vitest project enforces this physically by running in node (any browser global throws `ReferenceError`), and the glob excludes `.test.tsx` so a stray TSX test won't be picked up. The **UI path** (colocated `*.test.tsx` against React components, in jsdom) is not wired up yet; there is no top-level `pnpm test` script for that reason. The single root config is `vitest.config.ts` using `test.projects: [...]`; the UI-path change will append a second project entry.
 
 ## Architecture
 
