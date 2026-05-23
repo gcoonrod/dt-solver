@@ -26,6 +26,10 @@ Test infrastructure is split into two projects in a single `vitest.config.ts` (`
 - **logic** — `environment: 'node'`, `include: ['__tests__/**/*.test.ts']`. Files under `__tests__/` MUST NOT import React, the DOM, D3, or anything in `src/components/` — the node environment enforces this physically (any browser global throws `ReferenceError`), and the glob excludes `.test.tsx` so a stray TSX test won't be picked up.
 - **ui** — `environment: 'jsdom'`, `include: ['src/components/**/*.test.{ts,tsx}']`, `setupFiles: ['./vitest.setup.ts']`. Tests are **colocated** next to the component they exercise (e.g., `src/components/panels/ConstraintInspector.test.tsx`). They use `@testing-library/react@^16` (React 19-compatible), `@testing-library/user-event@^14`, and `@testing-library/jest-dom@^6.6` for accessible queries and matchers. UI tests use the real `useTimingStore` (reset to a known profile in `beforeEach` via `useTimingStore.setState(initialState, false)`); mocking the store is forbidden. `vitest.setup.ts` registers jest-dom matchers and stubs `ResizeObserver` (jsdom does not implement it). Snapshot assertions are forbidden — assert via accessible queries instead.
 
+## CI
+
+GitHub Actions runs `lint`, `build`, and `test` as three parallel jobs on every push to `main`/`develop` and every PR targeting either. The workflow lives at `.github/workflows/ci.yml`; Node is pinned to `24` (current latest LTS, satisfies the `>= 20` floor from the `logic-path-tests` capability) and pnpm comes from the `packageManager` field in `package.json`. Required-status-check gating is a separate repo-admin setting, not part of the workflow file.
+
 ## Architecture
 
 The product is a client-side digital-circuit timing constraint solver and waveform visualizer (see `README.md` and `ROADMAP.md` for the product story). The architecture is deliberately three-layered to keep the math pure and testable:
