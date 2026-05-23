@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -76,15 +76,21 @@ afterEach(() => {
   cleanup();
 });
 
+function findBottomPanel(container: HTMLElement): HTMLElement {
+  // The page renders two `flex-basis: <pct>%` panels. The bottom panel's
+  // initial fraction is 0.42 (the page's `useVerticalSplit({ initialFrac: 0.42 })` default).
+  const panel = Array.from(
+    container.querySelectorAll<HTMLElement>("[style*='flex-basis']"),
+  ).find((el) => el.style.flexBasis.startsWith("42"));
+  if (!panel) throw new Error("bottom panel (flex-basis ~42%) not found");
+  return panel;
+}
+
 describe("<Page /> integration", () => {
   it("dragging the splitter past the upper bound clamps to maxFrac=0.7", () => {
     const { container } = render(<Page />);
-    const splitter = container.querySelector<HTMLDivElement>(
-      ".cursor-row-resize",
-    )!;
-    const bottomPanel = Array.from(
-      container.querySelectorAll<HTMLElement>("[style*='flex-basis']"),
-    ).find((el) => el.style.flexBasis.startsWith("42"))!;
+    const splitter = screen.getByTestId("splitter");
+    const bottomPanel = findBottomPanel(container);
 
     // Massive upward drag (clientY 1000 → 0): next = 0.42 - (-1000/400) = 2.92,
     // clamped to maxFrac=0.7 → flexBasis "70%".
@@ -96,12 +102,8 @@ describe("<Page /> integration", () => {
 
   it("dragging the splitter past the lower bound clamps to minFrac=0.15", () => {
     const { container } = render(<Page />);
-    const splitter = container.querySelector<HTMLDivElement>(
-      ".cursor-row-resize",
-    )!;
-    const bottomPanel = Array.from(
-      container.querySelectorAll<HTMLElement>("[style*='flex-basis']"),
-    ).find((el) => el.style.flexBasis.startsWith("42"))!;
+    const splitter = screen.getByTestId("splitter");
+    const bottomPanel = findBottomPanel(container);
 
     // Massive downward drag (clientY 0 → 1000): next = 0.42 - (1000/400) = -2.08,
     // clamped to minFrac=0.15 → flexBasis "15%".
@@ -113,31 +115,23 @@ describe("<Page /> integration", () => {
 
   it("dragging the splitter updates the bottom-panel flex basis", () => {
     const { container } = render(<Page />);
-    const splitter = container.querySelector<HTMLDivElement>(
-      ".cursor-row-resize",
-    );
-    expect(splitter).not.toBeNull();
-
-    // The page renders two `flex-basis: <pct>%` panels. The bottom panel's
-    // initial fraction is 0.42 (the page's `useVerticalSplit({ initialFrac: 0.42 })` default).
-    const bottomBefore = Array.from(
-      container.querySelectorAll<HTMLElement>("[style*='flex-basis']"),
-    ).find((el) => el.style.flexBasis.startsWith("42"));
-    expect(bottomBefore).toBeDefined();
+    const splitter = screen.getByTestId("splitter");
+    const bottomPanel = findBottomPanel(container);
 
     // Drag upward: clientY 200 → 100 (delta -100). With h=400 (stubbed) and
     // startFrac=0.42, next = 0.42 - (-100 / 400) = 0.67 → clamped to [0.15,0.7].
-    fireEvent.mouseDown(splitter!, { clientY: 200 });
+    fireEvent.mouseDown(splitter, { clientY: 200 });
     fireEvent.mouseMove(window, { clientY: 100 });
 
-    expect(bottomBefore!.style.flexBasis).not.toBe("42%");
+    expect(bottomPanel.style.flexBasis).not.toBe("42%");
   });
 
   it("Cmd/Meta + '=' narrows the viewport (zoom in)", () => {
     render(<Page />);
     const w0 = useTimingStore.getState().tMaxNs - useTimingStore.getState().tMinNs;
 
-    fireEvent.keyDown(document.body, { key: "=", metaKey: true });
+    // Dispatch on `window` to match the listener target in useGlobalShortcuts.
+    fireEvent.keyDown(window, { key: "=", metaKey: true });
 
     const w1 = useTimingStore.getState().tMaxNs - useTimingStore.getState().tMinNs;
     expect(w1).toBeLessThan(w0);
@@ -147,14 +141,14 @@ describe("<Page /> integration", () => {
     render(<Page />);
 
     // First zoom in so the window is non-default.
-    fireEvent.keyDown(document.body, { key: "=", metaKey: true });
+    fireEvent.keyDown(window, { key: "=", metaKey: true });
     const wZoomed =
       useTimingStore.getState().tMaxNs - useTimingStore.getState().tMinNs;
     const wDefault =
       W65C02S_14MHz.defaultWindowNs.tMaxNs - W65C02S_14MHz.defaultWindowNs.tMinNs;
     expect(wZoomed).toBeLessThan(wDefault);
 
-    fireEvent.keyDown(document.body, { key: "f" });
+    fireEvent.keyDown(window, { key: "f" });
 
     const { tMinNs, tMaxNs } = useTimingStore.getState();
     expect(tMinNs).toBe(W65C02S_14MHz.defaultWindowNs.tMinNs);
@@ -165,7 +159,7 @@ describe("<Page /> integration", () => {
     render(<Page />);
     const before = useTimingStore.getState().cursorTimeNs;
 
-    fireEvent.keyDown(document.body, { key: "ArrowRight" });
+    fireEvent.keyDown(window, { key: "ArrowRight" });
 
     const after = useTimingStore.getState().cursorTimeNs;
     expect(after).toBeCloseTo(before + 1, 6);
@@ -175,10 +169,14 @@ describe("<Page /> integration", () => {
     render(<Page />);
 
     // Zoom in first so we have a non-default window to detect a missed fit.
-    fireEvent.keyDown(document.body, { key: "=", metaKey: true });
+    fireEvent.keyDown(window, { key: "=", metaKey: true });
     const wZoomed =
       useTimingStore.getState().tMaxNs - useTimingStore.getState().tMinNs;
 
+    // The guard checks `e.target.tagName === "INPUT"`, so this case must
+    // dispatch from the input itself (keeps bubbling to the window listener,
+    // but with target=input). Switching to window here would silently defeat
+    // the test.
     const input = document.createElement("input");
     document.body.appendChild(input);
     try {

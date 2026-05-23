@@ -15,8 +15,8 @@ export default function Splitter({ orientation, onMouseDown }: SplitterProps) {
     orientation === "horizontal" ? HORIZONTAL_CLASSES : VERTICAL_CLASSES;
   return (
     <div
-      role="separator"
-      aria-orientation={orientation}
+      data-testid="splitter"
+      data-orientation={orientation}
       onMouseDown={onMouseDown}
       className={`${sizing} bg-[#0a0e14] hover:bg-slate-700 flex-shrink-0 relative group`}
     >
