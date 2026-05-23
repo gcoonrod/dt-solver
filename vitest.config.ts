@@ -13,7 +13,15 @@ export default defineConfig({
           include: ["__tests__/**/*.test.ts"],
         },
       },
-      // The UI-path change appends a second project entry here.
+      {
+        plugins: [tsconfigPaths()],
+        test: {
+          name: { label: "ui", color: "cyan" },
+          environment: "jsdom",
+          include: ["src/components/**/*.test.{ts,tsx}"],
+          setupFiles: ["./vitest.setup.ts"],
+        },
+      },
     ],
   },
 });

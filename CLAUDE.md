@@ -17,9 +17,14 @@ Package manager is **pnpm** (see `pnpm-workspace.yaml` and the `packageManager` 
 | Production build | `pnpm build` |
 | Production serve | `pnpm start` |
 | Lint | `pnpm lint` (ESLint 9 flat config, extends `eslint-config-next/core-web-vitals` + `/typescript`) |
-| Logic-path tests | `pnpm test:logic` (Vitest 3, node environment; watch via `pnpm test:logic:watch`) |
+| All tests | `pnpm test` (Vitest 4, runs both projects; watch via per-project scripts below) |
+| Logic-path tests | `pnpm test:logic` (Vitest 4, node environment; watch via `pnpm test:logic:watch`) |
+| UI-path tests | `pnpm test:ui` (Vitest 4, jsdom environment; watch via `pnpm test:ui:watch`) |
 
-Test infrastructure is split into two paths. The **logic path** is wired up: Vitest runs every `__tests__/**/*.test.ts` file in `environment: 'node'`. Tests under `__tests__/` MUST NOT import React, the DOM, D3, or anything in `src/components/` — the `logic` Vitest project enforces this physically by running in node (any browser global throws `ReferenceError`), and the glob excludes `.test.tsx` so a stray TSX test won't be picked up. The **UI path** (colocated `*.test.tsx` against React components, in jsdom) is not wired up yet; there is no top-level `pnpm test` script for that reason. The single root config is `vitest.config.ts` using `test.projects: [...]`; the UI-path change will append a second project entry.
+Test infrastructure is split into two projects in a single `vitest.config.ts` (`test.projects: [...]`):
+
+- **logic** — `environment: 'node'`, `include: ['__tests__/**/*.test.ts']`. Files under `__tests__/` MUST NOT import React, the DOM, D3, or anything in `src/components/` — the node environment enforces this physically (any browser global throws `ReferenceError`), and the glob excludes `.test.tsx` so a stray TSX test won't be picked up.
+- **ui** — `environment: 'jsdom'`, `include: ['src/components/**/*.test.{ts,tsx}']`, `setupFiles: ['./vitest.setup.ts']`. Tests are **colocated** next to the component they exercise (e.g., `src/components/panels/ConstraintInspector.test.tsx`). They use `@testing-library/react@^16` (React 19-compatible), `@testing-library/user-event@^14`, and `@testing-library/jest-dom@^6.6` for accessible queries and matchers. UI tests use the real `useTimingStore` (reset to a known profile in `beforeEach` via `useTimingStore.setState(initialState, false)`); mocking the store is forbidden. `vitest.setup.ts` registers jest-dom matchers and stubs `ResizeObserver` (jsdom does not implement it). Snapshot assertions are forbidden — assert via accessible queries instead.
 
 ## Architecture
 
