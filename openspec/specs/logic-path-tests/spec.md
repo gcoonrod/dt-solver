@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines the unit-test infrastructure and coverage for the project's "logic path" — the pure, browser-free modules under `src/core/`, `src/store/`, and `src/data/`. Establishes Vitest 3.x as the runner, the `vitest.config.ts` project layout, the `pnpm test:logic` scripts, and the minimum coverage requirements for the solver, the Zustand store, and the canonical demo profile.
-
 ## Requirements
-
 ### Requirement: Vitest 4.x is the unit-test runner
 
 The repository SHALL adopt Vitest (`^4.0.0`) as the unit-test runner. The dev-dependency set SHALL include `vitest`, `@vitest/coverage-v8`, and `vite-tsconfig-paths`. `vitest` and `@vitest/coverage-v8` SHALL share the same major version. No other test-runner (Jest, mocha, `node:test`) SHALL be installed in parallel. The host SHALL run Node.js `>= 20.0.0` (Vitest 4 requirement).
@@ -40,7 +38,7 @@ There SHALL be exactly one root-level Vitest config file: `vitest.config.ts`. It
 
 ### Requirement: `test:logic` package script
 
-`package.json` SHALL define exactly two test-related scripts in this change: `test:logic` (runs `vitest run --project logic`) and `test:logic:watch` (runs `vitest --project logic`). A top-level `test` script SHALL NOT be added in this change.
+`package.json` SHALL define the two logic-related test scripts: `test:logic` (runs `vitest run --project logic`) and `test:logic:watch` (runs `vitest --project logic`). With the introduction of the `ui-path-tests` capability, a top-level `pnpm test` script SHALL also exist (defined and constrained by the `ui-path-tests` capability) and SHALL execute every registered Vitest project. The previous "no top-level `pnpm test` script" prohibition no longer applies and SHALL NOT be reintroduced.
 
 #### Scenario: `pnpm test:logic` runs only the logic project
 
@@ -48,10 +46,11 @@ There SHALL be exactly one root-level Vitest config file: `vitest.config.ts`. It
 - **THEN** Vitest SHALL execute every file under `__tests__/**/*.test.ts`
 - **AND** SHALL NOT execute any file under `src/**/*.test.tsx`
 
-#### Scenario: Top-level `pnpm test` is not yet defined
+#### Scenario: `pnpm test` runs the logic project as part of the full run
 
 - **WHEN** `pnpm test` is invoked
-- **THEN** the command SHALL fail (no such script), pending the UI-path change
+- **THEN** Vitest SHALL execute the `logic` project (in addition to any other registered projects)
+- **AND** SHALL exit with a non-zero status if any logic-project test fails
 
 ### Requirement: Solver coverage — one test per constraint-type worst-case rule
 
@@ -129,3 +128,4 @@ Every test file under `__tests__/` SHALL run successfully in `environment: 'node
 
 - **WHEN** a file `__tests__/foo.test.tsx` is created
 - **THEN** the `logic` project's `include: ['__tests__/**/*.test.ts']` glob SHALL NOT match it (only `.ts`, not `.tsx`)
+
