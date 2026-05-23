@@ -18,7 +18,7 @@ export default defineConfig({
         test: {
           name: { label: "ui", color: "cyan" },
           environment: "jsdom",
-          include: ["src/components/**/*.test.{ts,tsx}"],
+          include: ["src/{app,components,hooks}/**/*.test.{ts,tsx}"],
           setupFiles: ["./vitest.setup.ts"],
         },
       },
