@@ -1,7 +1,7 @@
 "use client";
 
 import { HEADER_H, ROW_H } from "@/components/canvas/WaveformTimeline";
-import { formatSignalDisplay } from "@/components/features/signalDisplay";
+import { formatChannelLabelDisplay } from "@/components/features/signalDisplay";
 import { useTimingStore } from "@/store/useTimingStore";
 
 export default function ChannelLabels() {
@@ -22,7 +22,7 @@ export default function ChannelLabels() {
         </span>
       </div>
       {signals.map((sig) => {
-        const display = formatSignalDisplay(sig, cursorTimeNs);
+        const display = formatChannelLabelDisplay(sig, cursorTimeNs);
         return (
           <div
             key={sig.id}

@@ -23,12 +23,20 @@ export interface UseVerticalSplitResult {
  * defines the drag denominator; the splitter element receives `startDrag`
  * via its `onMouseDown` prop.
  */
+const clamp = (v: number, lo: number, hi: number) =>
+  Math.max(lo, Math.min(hi, v));
+
 export function useVerticalSplit({
   initialFrac,
   minFrac,
   maxFrac,
 }: UseVerticalSplitArgs): UseVerticalSplitResult {
-  const [bottomFrac, setBottomFrac] = useState(initialFrac);
+  // Store the raw value the drag math produces; return the clamped view so
+  // `bottomFrac ∈ [minFrac, maxFrac]` is a render-time invariant — including
+  // before any drag (out-of-range `initialFrac`) and after a bounds change.
+  const [rawFrac, setRawFrac] = useState(initialFrac);
+  const bottomFrac = clamp(rawFrac, minFrac, maxFrac);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<{
     startY: number;
@@ -40,11 +48,7 @@ export function useVerticalSplit({
     const onMove = (e: globalThis.MouseEvent) => {
       if (!dragRef.current) return;
       const { startY, startFrac, h } = dragRef.current;
-      const next = Math.max(
-        minFrac,
-        Math.min(maxFrac, startFrac - (e.clientY - startY) / h),
-      );
-      setBottomFrac(next);
+      setRawFrac(startFrac - (e.clientY - startY) / h);
     };
     const onUp = () => {
       dragRef.current = null;
@@ -55,15 +59,17 @@ export function useVerticalSplit({
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [minFrac, maxFrac]);
+  }, []);
 
   const startDrag = (e: ReactMouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    dragRef.current = {
-      startY: e.clientY,
-      startFrac: bottomFrac,
-      h: containerRef.current.clientHeight,
-    };
+    const el = containerRef.current;
+    if (!el) return;
+    // Prefer clientHeight; fall back to getBoundingClientRect for composited
+    // layers where clientHeight reports 0. Bail entirely if neither yields a
+    // positive height so the drag math never divides by zero.
+    const h = el.clientHeight || el.getBoundingClientRect().height;
+    if (h <= 0) return;
+    dragRef.current = { startY: e.clientY, startFrac: bottomFrac, h };
     e.preventDefault();
   };
 

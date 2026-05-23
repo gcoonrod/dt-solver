@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { formatSignalDisplay } from "@/components/features/signalDisplay";
+import {
+  formatChannelLabelDisplay,
+  formatSignalDisplay,
+} from "@/components/features/signalDisplay";
 import type { ClockSignal, DataSignal } from "@/types/signal";
 
 const clock: ClockSignal = {
@@ -74,5 +77,23 @@ describe("formatSignalDisplay", () => {
 
   it("renders an INVALID state as its first letter", () => {
     expect(formatSignalDisplay(dataInvalid, 0)).toBe("I");
+  });
+});
+
+describe("formatChannelLabelDisplay", () => {
+  it("renders a clock HIGH instant as 'HIGH'", () => {
+    expect(formatChannelLabelDisplay(clock, 10)).toBe("HIGH");
+  });
+
+  it("renders a clock LOW instant as 'LOW'", () => {
+    expect(formatChannelLabelDisplay(clock, 60)).toBe("LOW");
+  });
+
+  it("renders HIGH_Z as 'HiZ' (channel-row variant)", () => {
+    expect(formatChannelLabelDisplay(dataWithValue, 0)).toBe("HiZ");
+  });
+
+  it("prefers an explicit transition value over a state glyph", () => {
+    expect(formatChannelLabelDisplay(dataWithValue, 50)).toBe("0xA9");
   });
 });

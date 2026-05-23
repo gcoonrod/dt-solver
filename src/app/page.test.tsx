@@ -34,6 +34,13 @@ function resetStoreToDemo(): void {
 // jsdom returns 0 for clientHeight, which would make the splitter drag math
 // divide by zero. Stub a non-zero height on the prototype for the duration of
 // this file so the drag handler can compute a real fraction.
+//
+// In jsdom `clientHeight` is inherited from `Element.prototype` rather than
+// defined as an own property on `HTMLElement.prototype`, so the saved
+// descriptor will usually be `undefined`. The cleanup path must delete the
+// own-property stub (so the inherited getter takes over again) rather than
+// gate restoration on a truthy saved descriptor — otherwise the stub leaks
+// to every later test file in the same Vitest worker.
 let originalClientHeight: PropertyDescriptor | undefined;
 
 beforeAll(() => {
@@ -56,6 +63,8 @@ afterAll(() => {
       "clientHeight",
       originalClientHeight,
     );
+  } else {
+    delete (HTMLElement.prototype as { clientHeight?: number }).clientHeight;
   }
 });
 
@@ -110,7 +119,7 @@ describe("<Page /> integration", () => {
     expect(splitter).not.toBeNull();
 
     // The page renders two `flex-basis: <pct>%` panels. The bottom panel's
-    // initial fraction is 0.42 (the page's `useState(0.42)` default).
+    // initial fraction is 0.42 (the page's `useVerticalSplit({ initialFrac: 0.42 })` default).
     const bottomBefore = Array.from(
       container.querySelectorAll<HTMLElement>("[style*='flex-basis']"),
     ).find((el) => el.style.flexBasis.startsWith("42"));
