@@ -17,8 +17,22 @@ Package manager is **pnpm** (see `pnpm-workspace.yaml` and the `packageManager` 
 | Production build | `pnpm build` |
 | Production serve | `pnpm start` |
 | Lint | `pnpm lint` (ESLint 9 flat config, extends `eslint-config-next/core-web-vitals` + `/typescript`) |
+| All tests | `pnpm test` (Vitest 4, runs both projects; watch via per-project scripts below) |
+| Logic-path tests | `pnpm test:logic` (Vitest 4, node environment; watch via `pnpm test:logic:watch`) |
+| UI-path tests | `pnpm test:ui` (Vitest 4, jsdom environment; watch via `pnpm test:ui:watch`) |
 
-**No test runner is wired up yet.** The README mentions `pnpm test` and the ROADMAP references Jest/Vitest, but neither is installed and there is no `test` script in `package.json`. The files under `__tests__/` are `// stub` placeholders. If you need to add tests, you'll first need to pick and install a runner — confirm the choice with the user.
+Test infrastructure is split into two projects in a single `vitest.config.ts` (`test.projects: [...]`):
+
+- **logic** — `environment: 'node'`, `include: ['__tests__/**/*.test.ts']`. Files under `__tests__/` MUST NOT import React, the DOM, D3, or anything in `src/components/` — the node environment enforces this physically (any browser global throws `ReferenceError`), and the glob excludes `.test.tsx` so a stray TSX test won't be picked up.
+- **ui** — `environment: 'jsdom'`, `include: ['src/components/**/*.test.{ts,tsx}']`, `setupFiles: ['./vitest.setup.ts']`. Tests are **colocated** next to the component they exercise (e.g., `src/components/panels/ConstraintInspector.test.tsx`). They use `@testing-library/react@^16` (React 19-compatible), `@testing-library/user-event@^14`, and `@testing-library/jest-dom@^6.6` for accessible queries and matchers. UI tests use the real `useTimingStore` (reset to a known profile in `beforeEach` via `useTimingStore.setState(initialState, false)`); mocking the store is forbidden. `vitest.setup.ts` registers jest-dom matchers and stubs `ResizeObserver` (jsdom does not implement it). Snapshot assertions are forbidden — assert via accessible queries instead.
+
+## CI
+
+GitHub Actions runs `lint`, `build`, and `test` as three parallel jobs on every push to `main`/`develop` and every PR targeting either. The workflow lives at `.github/workflows/ci.yml`; Node is pinned to `24` (current latest LTS, satisfies the `>= 20` floor from the `logic-path-tests` capability) and pnpm comes from the `packageManager` field in `package.json`. Required-status-check gating is a separate repo-admin setting, not part of the workflow file.
+
+## Dependencies
+
+Dependabot opens **one grouped PR per ecosystem per week** (npm + github-actions) on Monday mornings PT — config at `.github/dependabot.yml`. Major npm bumps are intentionally **not** auto-PR'd (React 19 → 20, etc. should land as their own coordinated changes); GitHub Actions majors flow through because they're typically Node-runtime tweaks rather than API breaks. **Security updates** fire independently of the schedule and may include majors — they require two GitHub-UI toggles to stay enabled: Settings → Code security → "Dependabot alerts" and "Dependabot security updates".
 
 ## Architecture
 

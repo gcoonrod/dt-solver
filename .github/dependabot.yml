@@ -1,0 +1,49 @@
+# Dependabot configuration — version updates only.
+#
+# This file controls SCHEDULED version-update PRs. It does NOT control
+# vulnerability scanning or security-update PRs. For full coverage, the
+# repo maintainer MUST also enable, in the GitHub UI:
+#
+#   Settings -> Code security -> Dependabot alerts            (ON)
+#   Settings -> Code security -> Dependabot security updates  (ON)
+#
+# Those toggles work independently of this file: security PRs open as soon
+# as a CVE is disclosed, even on days the schedule below does not run, and
+# bypass the `ignore` rules to deliver critical fixes (including majors).
+
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ecosystem:npm"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm-non-major:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ecosystem:github-actions"
+    groups:
+      github-actions:
+        patterns: ["*"]
