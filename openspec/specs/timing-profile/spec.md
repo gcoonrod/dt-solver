@@ -8,7 +8,7 @@ The contract for the `TimingProfile` type, the store's `activeProfile` slot and 
 
 ### Requirement: `TimingProfile` contract lives in `src/types/profile.ts`
 
-The `TimingProfile` interface SHALL be exported from `src/types/profile.ts` and re-exported from `src/types/index.ts`. It SHALL bundle the four fields the store needs to bootstrap a profile: `id: string`, `name: string`, `description: string`, `signals: AnySignal[]`, `constraints: Constraint[]`, and `defaultWindowNs: { tMinNs: number; tMaxNs: number }`. No file outside `src/types/` SHALL `export interface TimingProfile` or `export type TimingProfile`.
+The `TimingProfile` interface SHALL be exported from `src/types/profile.ts` and re-exported from `src/types/index.ts`. It SHALL bundle the six fields the store needs to bootstrap a profile: `id: string`, `name: string`, `description: string`, `signals: AnySignal[]`, `constraints: Constraint[]`, and `defaultWindowNs: { tMinNs: number; tMaxNs: number }`. No file outside `src/types/` SHALL `export interface TimingProfile` or `export type TimingProfile`.
 
 #### Scenario: `TimingProfile` is importable from the types barrel
 

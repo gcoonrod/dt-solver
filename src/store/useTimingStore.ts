@@ -111,9 +111,10 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     set({ tMinNs: nMin, tMaxNs: nMin + newSpan });
   },
   fitView() {
+    const { defaultWindowNs } = get().activeProfile;
     set({
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
+      tMinNs: defaultWindowNs.tMinNs,
+      tMaxNs: defaultWindowNs.tMaxNs,
     });
   },
 }));

@@ -118,6 +118,28 @@ describe("useTimingStore — viewport math", () => {
     expect(tMinNs).toBe(0);
     expect(tMaxNs).toBe(150);
   });
+
+  it("fitView() honors the current activeProfile after a swap", () => {
+    // Regression: fitView used to close over the module-scope bootstrap
+    // constant and snap to the seed window even after setActiveProfile.
+    const p2: TimingProfile = {
+      id: "alt",
+      name: "Alt",
+      description: "",
+      signals: [],
+      constraints: [],
+      defaultWindowNs: { tMinNs: 50, tMaxNs: 500 },
+    };
+    useTimingStore.getState().setActiveProfile(p2);
+    // Move the viewport away from p2's defaults so fitView has work to do.
+    useTimingStore.setState({ tMinNs: 0, tMaxNs: 999 });
+
+    useTimingStore.getState().fitView();
+
+    const { tMinNs, tMaxNs } = useTimingStore.getState();
+    expect(tMinNs).toBe(50);
+    expect(tMaxNs).toBe(500);
+  });
 });
 
 describe("useTimingStore — activeProfile", () => {
