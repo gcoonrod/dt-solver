@@ -132,8 +132,8 @@ function edgeOptionsFor(sig: AnySignal | undefined): EdgeOption[] {
 }
 
 // ============================================================================
-// Root: subscribes to builderOpen/Initial and mounts the shell on a fresh key
-// so reopening always gets fresh form state (the prototype's openSession trick).
+// Root: returns null when closed, so the shell unmounts and reopening always
+// gets fresh form state without needing a key prop.
 // ============================================================================
 
 export default function ConstraintBuilder() {
@@ -186,21 +186,19 @@ interface BuilderShellProps {
 }
 
 function BuilderShell({ signals, initial, onCancel, onSubmit }: BuilderShellProps) {
-  const defaultAnchor = useMemo<SignalReference>(() => {
+  const [type, setType] = useState<ConstraintType>(initial?.type ?? "SETUP");
+
+  // Lazy initializers — compute once at mount. Fresh values on every open are
+  // guaranteed by ConstraintBuilder's early-return unmount (the shell is never
+  // kept alive across close→open transitions).
+  const [anchor, setAnchor] = useState<SignalReference>(() => {
     if (initial?.anchor) return initial.anchor;
     const clk = signals.find((s) => s.type === "CLOCK");
     if (clk) return { signalId: clk.id, edgeDirection: "FALLING" };
-    return {
-      signalId: signals[0]?.id ?? "",
-      edgeDirection: "TRANSITION",
-    };
-    // Initial-mount defaults — explicitly NOT a function of `signals` over the
-    // session lifetime; the `key={openSession}` on the shell guarantees a
-    // fresh mount per open, so we capture once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return { signalId: signals[0]?.id ?? "", edgeDirection: "TRANSITION" };
+  });
 
-  const defaultTarget = useMemo<SignalReference>(() => {
+  const [target, setTarget] = useState<SignalReference>(() => {
     if (initial?.target) return initial.target;
     const dat = signals.find((s) => s.type === "DATA");
     if (dat) return { signalId: dat.id, edgeDirection: "TRANSITION" };
@@ -208,12 +206,7 @@ function BuilderShell({ signals, initial, onCancel, onSubmit }: BuilderShellProp
       signalId: signals[1]?.id ?? signals[0]?.id ?? "",
       edgeDirection: "TRANSITION",
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const [type, setType] = useState<ConstraintType>(initial?.type ?? "SETUP");
-  const [anchor, setAnchor] = useState<SignalReference>(defaultAnchor);
-  const [target, setTarget] = useState<SignalReference>(defaultTarget);
+  });
   const [minNs, setMinNs] = useState<string>(String(initial?.minNs ?? 20));
   const [maxNs, setMaxNs] = useState<string>(String(initial?.maxNs ?? 30));
 
@@ -1369,18 +1362,27 @@ interface KeyboardShortcutsProps {
 }
 
 function KeyboardShortcuts({ onEsc, onSubmit }: KeyboardShortcutsProps) {
+  const escRef = useRef(onEsc);
+  const submitRef = useRef(onSubmit);
+  useEffect(() => {
+    escRef.current = onEsc;
+  }, [onEsc]);
+  useEffect(() => {
+    submitRef.current = onSubmit;
+  }, [onSubmit]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onEsc();
+        escRef.current();
       } else if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        onSubmit();
+        submitRef.current();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onEsc, onSubmit]);
+  }, []);
   return null;
 }
