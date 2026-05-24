@@ -10,28 +10,14 @@ export default function ConstraintInspector() {
   const signals = useTimingStore((s) => s.signals);
   const hoveredId = useTimingStore((s) => s.hoveredConstraintId);
   const hoverConstraint = useTimingStore((s) => s.hoverConstraint);
-  const addConstraint = useTimingStore((s) => s.addConstraint);
+  const openBuilder = useTimingStore((s) => s.openBuilder);
   const removeConstraint = useTimingStore((s) => s.removeConstraint);
 
   const passCount = solved.filter((c) => c.status === "PASS").length;
   const failCount = solved.filter((c) => c.status === "FAIL").length;
   const unresolved = solved.filter((c) => c.status === "UNRESOLVED").length;
 
-  const handleAdd = () => {
-    const sigs = useTimingStore.getState().signals;
-    const clock = sigs.find((s) => s.type === "CLOCK");
-    const data = sigs.find((s) => s.type === "DATA");
-    if (!clock || !data) return;
-    const n = solved.length + 1;
-    addConstraint({
-      id: `c-${Date.now().toString(36)}`,
-      name: `Custom rule ${n}`,
-      type: "SETUP",
-      anchor: { signalId: clock.id, edgeDirection: "FALLING" },
-      target: { signalId: data.id, edgeDirection: "TRANSITION" },
-      minNs: 20,
-    });
-  };
+  const handleAdd = () => openBuilder();
 
   return (
     <div className="flex flex-col h-full bg-[#0d1117]">

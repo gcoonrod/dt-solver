@@ -25,6 +25,10 @@ export interface TimingState {
   hoveredConstraintId: string | null;
   selectedSignalId: string | null;
 
+  // ----- modal lifecycle (constraint builder) -----
+  builderOpen: boolean;
+  builderInitial: Constraint | null;
+
   // ----- actions -----
   resolve: () => void;
   setActiveProfile: (profile: TimingProfile) => void;
@@ -38,6 +42,8 @@ export interface TimingState {
   selectSignal: (id: string | null) => void;
   zoomAt: (centerNs: number, factor: number) => void;
   fitView: () => void;
+  openBuilder: (initial?: Constraint) => void;
+  closeBuilder: () => void;
 }
 
 const profile = W65C02S_14MHz;
@@ -54,6 +60,9 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
   cursorTimeNs: 35.7,
   hoveredConstraintId: null,
   selectedSignalId: null,
+
+  builderOpen: false,
+  builderInitial: null,
 
   resolve() {
     const s = get();
@@ -116,5 +125,11 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
       tMinNs: defaultWindowNs.tMinNs,
       tMaxNs: defaultWindowNs.tMaxNs,
     });
+  },
+  openBuilder(initial) {
+    set({ builderOpen: true, builderInitial: initial ?? null });
+  },
+  closeBuilder() {
+    set({ builderOpen: false, builderInitial: null });
   },
 }));
