@@ -3,29 +3,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import ChannelLabels from "@/components/features/ChannelLabels";
 import { formatChannelLabelDisplay } from "@/components/features/signalDisplay";
-import { solve } from "@/core/solver";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import { useTimingStore } from "@/store/useTimingStore";
 
-function resetStoreToDemo(): void {
-  const profile = W65C02S_14MHz;
-  useTimingStore.setState(
-    {
-      signals: profile.signals,
-      constraints: profile.constraints,
-      solved: solve(profile.signals, profile.constraints, 1000),
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
-      cursorTimeNs: 35.7,
-      hoveredConstraintId: null,
-      selectedSignalId: null,
-    },
-    false,
-  );
-}
+const INITIAL_STORE_STATE = useTimingStore.getInitialState();
 
 beforeEach(() => {
-  resetStoreToDemo();
+  useTimingStore.setState(INITIAL_STORE_STATE, true);
 });
 
 afterEach(() => {
@@ -35,7 +18,8 @@ afterEach(() => {
 describe("<ChannelLabels />", () => {
   it("renders every seeded signal by its display name", () => {
     render(<ChannelLabels />);
-    for (const sig of W65C02S_14MHz.signals) {
+    const { signals } = useTimingStore.getState().activeProfile;
+    for (const sig of signals) {
       expect(screen.getByText(sig.name)).toBeInTheDocument();
     }
   });
@@ -46,7 +30,9 @@ describe("<ChannelLabels />", () => {
     // Pick a signal whose display changes between t=35.7 and t=50 — PHI2 at
     // 14 MHz has period 71.43 ns (HIGH 0..35.71, LOW 35.71..71.43), so 35.7
     // is HIGH ("HIGH") and 50 is LOW ("LOW").
-    const phi2 = W65C02S_14MHz.signals.find((s) => s.id === "phi2")!;
+    const phi2 = useTimingStore
+      .getState()
+      .activeProfile.signals.find((s) => s.id === "phi2")!;
     const before = formatChannelLabelDisplay(phi2, 35.7);
     const after = formatChannelLabelDisplay(phi2, 50);
     expect(before).not.toBe(after); // sanity-check the fixture

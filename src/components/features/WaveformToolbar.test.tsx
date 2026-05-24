@@ -4,29 +4,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { formatTime } from "@/components/canvas/WaveformTimeline";
 import WaveformToolbar from "@/components/features/WaveformToolbar";
-import { solve } from "@/core/solver";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import { useTimingStore } from "@/store/useTimingStore";
 
-function resetStoreToDemo(): void {
-  const profile = W65C02S_14MHz;
-  useTimingStore.setState(
-    {
-      signals: profile.signals,
-      constraints: profile.constraints,
-      solved: solve(profile.signals, profile.constraints, 1000),
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
-      cursorTimeNs: 35.7,
-      hoveredConstraintId: null,
-      selectedSignalId: null,
-    },
-    false,
-  );
-}
+const INITIAL_STORE_STATE = useTimingStore.getInitialState();
 
 beforeEach(() => {
-  resetStoreToDemo();
+  useTimingStore.setState(INITIAL_STORE_STATE, true);
 });
 
 afterEach(() => {
@@ -71,8 +54,8 @@ describe("<WaveformToolbar />", () => {
 
     await user.click(screen.getByRole("button", { name: "Fit" }));
 
-    const { tMinNs, tMaxNs } = useTimingStore.getState();
-    expect(tMinNs).toBe(W65C02S_14MHz.defaultWindowNs.tMinNs);
-    expect(tMaxNs).toBe(W65C02S_14MHz.defaultWindowNs.tMaxNs);
+    const { tMinNs, tMaxNs, activeProfile } = useTimingStore.getState();
+    expect(tMinNs).toBe(activeProfile.defaultWindowNs.tMinNs);
+    expect(tMaxNs).toBe(activeProfile.defaultWindowNs.tMaxNs);
   });
 });

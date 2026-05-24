@@ -3,29 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import ComponentLibrary from "@/components/panels/ComponentLibrary";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
-import { solve } from "@/core/solver";
 import { useTimingStore } from "@/store/useTimingStore";
 
-function resetStoreToDemo(): void {
-  const profile = W65C02S_14MHz;
-  useTimingStore.setState(
-    {
-      signals: profile.signals,
-      constraints: profile.constraints,
-      solved: solve(profile.signals, profile.constraints, 1000),
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
-      cursorTimeNs: 35.7,
-      hoveredConstraintId: null,
-      selectedSignalId: null,
-    },
-    false,
-  );
-}
+const INITIAL_STORE_STATE = useTimingStore.getInitialState();
 
 beforeEach(() => {
-  resetStoreToDemo();
+  useTimingStore.setState(INITIAL_STORE_STATE, true);
 });
 
 afterEach(() => {
@@ -35,17 +18,16 @@ afterEach(() => {
 describe("ComponentLibrary", () => {
   it("renders every seeded signal by its display name", () => {
     render(<ComponentLibrary />);
-    for (const sig of W65C02S_14MHz.signals) {
+    for (const sig of useTimingStore.getState().activeProfile.signals) {
       expect(screen.getByText(sig.name)).toBeInTheDocument();
     }
   });
 
   it("shows the profile name and signal count in the header", () => {
     render(<ComponentLibrary />);
-    expect(screen.getByText("W65C02S @ 14 MHz")).toBeInTheDocument();
-    expect(
-      screen.getByText(String(W65C02S_14MHz.signals.length)),
-    ).toBeInTheDocument();
+    const { name, signals } = useTimingStore.getState().activeProfile;
+    expect(screen.getByText(name)).toBeInTheDocument();
+    expect(screen.getByText(String(signals.length))).toBeInTheDocument();
   });
 
   it("adds a new signal to the store when the Add Signal button is clicked", async () => {

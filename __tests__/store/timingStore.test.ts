@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import { useTimingStore } from "@/store/useTimingStore";
 import type { Constraint } from "@/types/constraint";
+import type { TimingProfile } from "@/types/profile";
 import type { AnySignal } from "@/types/signal";
 
 // Snapshot the module-scope singleton's initial state at import time.
 // Actions only ever produce new arrays (via spread), so this reference stays clean.
 const INITIAL = {
+  activeProfile: useTimingStore.getState().activeProfile,
   signals: useTimingStore.getState().signals,
   constraints: useTimingStore.getState().constraints,
   solved: useTimingStore.getState().solved,
@@ -114,5 +117,85 @@ describe("useTimingStore — viewport math", () => {
     // W65C02S_14MHz.defaultWindowNs = { tMinNs: 0, tMaxNs: 150 }
     expect(tMinNs).toBe(0);
     expect(tMaxNs).toBe(150);
+  });
+});
+
+describe("useTimingStore — activeProfile", () => {
+  it("bootstraps activeProfile to W65C02S_14MHz", () => {
+    // Fresh state via the snapshot; activeProfile is the seed by reference.
+    expect(useTimingStore.getState().activeProfile).toBe(W65C02S_14MHz);
+  });
+
+  it("setActiveProfile(p) swaps signals, constraints, viewport, and re-solves", () => {
+    const altClock: AnySignal = {
+      id: "clk2",
+      type: "CLOCK",
+      name: "CLK2",
+      frequencyMHz: 1,
+      dutyCycle: 0.5,
+      phaseOffsetNs: 0,
+    };
+    const altData: AnySignal = {
+      id: "d2",
+      type: "DATA",
+      name: "D2",
+      baseState: "LOW",
+      transitions: [
+        { id: "d2-1", timeNs: 100, newState: "HIGH", direction: "RISING" },
+      ],
+    };
+    const altConstraint: Constraint = {
+      id: "alt-c",
+      name: "Alt C",
+      type: "SETUP",
+      anchor: { signalId: "clk2", edgeDirection: "FALLING" },
+      target: { signalId: "d2", edgeDirection: "TRANSITION" },
+      minNs: 5,
+    };
+    const p2: TimingProfile = {
+      id: "alt",
+      name: "Alt Profile",
+      description: "alternate",
+      signals: [altClock, altData],
+      constraints: [altConstraint],
+      defaultWindowNs: { tMinNs: 0, tMaxNs: 999 },
+    };
+
+    const prevSolved = useTimingStore.getState().solved;
+    useTimingStore.getState().setActiveProfile(p2);
+
+    const s = useTimingStore.getState();
+    expect(s.activeProfile).toBe(p2);
+    expect(s.signals).toBe(p2.signals);
+    expect(s.constraints).toBe(p2.constraints);
+    expect(s.tMinNs).toBe(0);
+    expect(s.tMaxNs).toBe(999);
+    // Re-solve produces a fresh array, one result per new constraint.
+    expect(s.solved).not.toBe(prevSolved);
+    expect(s.solved.length).toBe(1);
+    expect(s.solved[0].id).toBe("alt-c");
+  });
+
+  it("setActiveProfile leaves cursor/hover/selection untouched", () => {
+    useTimingStore.setState({
+      cursorTimeNs: 42,
+      hoveredConstraintId: "tads",
+      selectedSignalId: "phi2",
+    });
+
+    const p2: TimingProfile = {
+      id: "alt",
+      name: "Alt",
+      description: "",
+      signals: [],
+      constraints: [],
+      defaultWindowNs: { tMinNs: 0, tMaxNs: 10 },
+    };
+    useTimingStore.getState().setActiveProfile(p2);
+
+    const s = useTimingStore.getState();
+    expect(s.cursorTimeNs).toBe(42);
+    expect(s.hoveredConstraintId).toBe("tads");
+    expect(s.selectedSignalId).toBe("phi2");
   });
 });

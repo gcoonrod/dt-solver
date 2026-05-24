@@ -2,29 +2,12 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import WaveformTimeline, { formatTime } from "@/components/canvas/WaveformTimeline";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
-import { solve } from "@/core/solver";
 import { useTimingStore } from "@/store/useTimingStore";
 
-function resetStoreToDemo(): void {
-  const profile = W65C02S_14MHz;
-  useTimingStore.setState(
-    {
-      signals: profile.signals,
-      constraints: profile.constraints,
-      solved: solve(profile.signals, profile.constraints, 1000),
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
-      cursorTimeNs: 35.7,
-      hoveredConstraintId: null,
-      selectedSignalId: null,
-    },
-    false,
-  );
-}
+const INITIAL_STORE_STATE = useTimingStore.getInitialState();
 
 beforeEach(() => {
-  resetStoreToDemo();
+  useTimingStore.setState(INITIAL_STORE_STATE, true);
 });
 
 afterEach(() => {
