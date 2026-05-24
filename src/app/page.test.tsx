@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import {
   afterAll,
   afterEach,
@@ -149,6 +149,22 @@ describe("<Page /> integration", () => {
 
     const after = useTimingStore.getState().cursorTimeNs;
     expect(after).toBeCloseTo(before + 1, 6);
+  });
+
+  it("mounts the ConstraintBuilder modal in response to openBuilder/closeBuilder", () => {
+    render(<Page />);
+    // Closed by default — no dialog in the DOM.
+    expect(screen.queryByRole("dialog", { name: /constraint builder/i })).not.toBeInTheDocument();
+
+    act(() => {
+      useTimingStore.getState().openBuilder();
+    });
+    expect(screen.getByRole("dialog", { name: /constraint builder/i })).toBeInTheDocument();
+
+    act(() => {
+      useTimingStore.getState().closeBuilder();
+    });
+    expect(screen.queryByRole("dialog", { name: /constraint builder/i })).not.toBeInTheDocument();
   });
 
   it("shortcuts are ignored when the event target is an <input>", () => {

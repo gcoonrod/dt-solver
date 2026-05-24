@@ -33,16 +33,24 @@ describe("ConstraintInspector", () => {
     expect(screen.getByText(/1 constraint violated/i)).toBeInTheDocument();
   });
 
-  it("adds a constraint to the store when New constraint is clicked and re-solves", async () => {
+  it("opens the constraint builder when New constraint is clicked", async () => {
     const user = userEvent.setup();
-    const before = useTimingStore.getState();
+    expect(useTimingStore.getState().builderOpen).toBe(false);
     render(<ConstraintInspector />);
 
     await user.click(screen.getByRole("button", { name: /new constraint/i }));
 
-    const after = useTimingStore.getState();
-    expect(after.constraints.length).toBe(before.constraints.length + 1);
-    // Re-solve cascade: solved tracks constraints 1:1.
-    expect(after.solved.length).toBe(after.constraints.length);
+    expect(useTimingStore.getState().builderOpen).toBe(true);
+  });
+
+  it("does NOT directly insert a constraint when New constraint is clicked", async () => {
+    // The modal now owns insertion; the button only opens it.
+    const user = userEvent.setup();
+    const before = useTimingStore.getState().constraints.length;
+    render(<ConstraintInspector />);
+
+    await user.click(screen.getByRole("button", { name: /new constraint/i }));
+
+    expect(useTimingStore.getState().constraints.length).toBe(before);
   });
 });

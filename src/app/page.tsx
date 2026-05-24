@@ -1,8 +1,9 @@
 "use client";
 
+import ConstraintBuilder from "@/components/features/ConstraintBuilder";
+import WaveformWorkspace from "@/components/features/WaveformWorkspace";
 import ComponentLibrary from "@/components/panels/ComponentLibrary";
 import ConstraintInspector from "@/components/panels/ConstraintInspector";
-import WaveformWorkspace from "@/components/features/WaveformWorkspace";
 import Splitter from "@/components/ui/Splitter";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { useVerticalSplit } from "@/hooks/useVerticalSplit";
@@ -39,6 +40,8 @@ export default function Page() {
           <ConstraintInspector />
         </div>
       </div>
+
+      <ConstraintBuilder />
     </div>
   );
 }

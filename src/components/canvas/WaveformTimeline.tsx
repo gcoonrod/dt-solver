@@ -297,11 +297,12 @@ function SignalRow({ sig, yTop, sigH, tMin, tMax, tToX }: SignalRowProps) {
 }
 
 // ---- Clock ---------------------------------------------------------------
-interface ClockTraceProps extends RowGeometry {
+export interface ClockTraceProps extends RowGeometry {
   sig: ClockSignal;
 }
 
-function ClockTrace({ sig, yTop, sigH, tMin, tMax, tToX }: ClockTraceProps) {
+/** Internal trace renderer; reused by ConstraintBuilder's preview. Not a stable external API. */
+export function ClockTrace({ sig, yTop, sigH, tMin, tMax, tToX }: ClockTraceProps) {
   const yHigh = yTop;
   const yLow = yTop + sigH;
   const edges = generateClockEdges(sig, tMin, tMax);
@@ -322,11 +323,12 @@ function ClockTrace({ sig, yTop, sigH, tMin, tMax, tToX }: ClockTraceProps) {
 }
 
 // ---- Single-bit line trace -----------------------------------------------
-interface LineTraceProps extends RowGeometry {
+export interface LineTraceProps extends RowGeometry {
   sig: DataSignal;
 }
 
-function LineTrace({ sig, yTop, sigH, tMin, tMax, tToX }: LineTraceProps) {
+/** Internal trace renderer; reused by ConstraintBuilder's preview. Not a stable external API. */
+export function LineTrace({ sig, yTop, sigH, tMin, tMax, tToX }: LineTraceProps) {
   const yHigh = yTop;
   const yLow = yTop + sigH;
   const startState = stateAt(sig, tMin).state;
@@ -353,7 +355,7 @@ function LineTrace({ sig, yTop, sigH, tMin, tMax, tToX }: LineTraceProps) {
 }
 
 // ---- Bus trace ------------------------------------------------------------
-interface BusTraceProps extends RowGeometry {
+export interface BusTraceProps extends RowGeometry {
   sig: DataSignal;
 }
 
@@ -364,7 +366,8 @@ interface BusSegment {
   value?: string;
 }
 
-function BusTrace({ sig, yTop, sigH, tMin, tMax, tToX }: BusTraceProps) {
+/** Internal trace renderer; reused by ConstraintBuilder's preview. Not a stable external API. */
+export function BusTrace({ sig, yTop, sigH, tMin, tMax, tToX }: BusTraceProps) {
   const yHigh = yTop;
   const yLow = yTop + sigH;
   const yMid = yTop + sigH / 2;

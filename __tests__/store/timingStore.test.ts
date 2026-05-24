@@ -18,6 +18,8 @@ const INITIAL = {
   cursorTimeNs: useTimingStore.getState().cursorTimeNs,
   hoveredConstraintId: useTimingStore.getState().hoveredConstraintId,
   selectedSignalId: useTimingStore.getState().selectedSignalId,
+  builderOpen: useTimingStore.getState().builderOpen,
+  builderInitial: useTimingStore.getState().builderInitial,
 };
 
 beforeEach(() => {
@@ -221,3 +223,62 @@ describe("useTimingStore — activeProfile", () => {
     expect(s.selectedSignalId).toBe("phi2");
   });
 });
+
+describe("useTimingStore — constraint builder modal lifecycle", () => {
+  it("bootstraps with builderOpen=false and builderInitial=null", () => {
+    expect(useTimingStore.getState().builderOpen).toBe(false);
+    expect(useTimingStore.getState().builderInitial).toBeNull();
+  });
+
+  it("openBuilder() with no argument opens the modal with a null seed", () => {
+    useTimingStore.getState().openBuilder();
+    const s = useTimingStore.getState();
+    expect(s.builderOpen).toBe(true);
+    expect(s.builderInitial).toBeNull();
+  });
+
+  it("openBuilder(c) seeds builderInitial with the passed constraint", () => {
+    const seed: Constraint = {
+      id: "seed-1",
+      name: "Seed",
+      type: "SETUP",
+      anchor: { signalId: "phi2", edgeDirection: "FALLING" },
+      target: { signalId: "addr", edgeDirection: "TRANSITION" },
+      minNs: 12,
+    };
+    useTimingStore.getState().openBuilder(seed);
+    const s = useTimingStore.getState();
+    expect(s.builderOpen).toBe(true);
+    expect(s.builderInitial).toBe(seed);
+  });
+
+  it("closeBuilder() resets both keys to their initial values", () => {
+    const seed: Constraint = {
+      id: "seed-2",
+      name: "Seed",
+      type: "HOLD",
+      anchor: { signalId: "phi2", edgeDirection: "RISING" },
+      target: { signalId: "addr", edgeDirection: "TRANSITION" },
+      minNs: 3,
+    };
+    useTimingStore.getState().openBuilder(seed);
+    useTimingStore.getState().closeBuilder();
+    const s = useTimingStore.getState();
+    expect(s.builderOpen).toBe(false);
+    expect(s.builderInitial).toBeNull();
+  });
+
+  it("open then close does not mutate signals, constraints, or solved", () => {
+    const before = useTimingStore.getState();
+    const sigsRef = before.signals;
+    const consRef = before.constraints;
+    const solvedRef = before.solved;
+    useTimingStore.getState().openBuilder();
+    useTimingStore.getState().closeBuilder();
+    const after = useTimingStore.getState();
+    expect(after.signals).toBe(sigsRef);
+    expect(after.constraints).toBe(consRef);
+    expect(after.solved).toBe(solvedRef);
+  });
+});
+
