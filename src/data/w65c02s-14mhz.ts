@@ -16,8 +16,9 @@
 //
 // All times in nanoseconds.
 
-import type { AnySignal } from "@/types/signal";
 import type { Constraint } from "@/types/constraint";
+import type { TimingProfile } from "@/types/profile";
+import type { AnySignal } from "@/types/signal";
 
 export const W65C02S_14MHz_signals: AnySignal[] = [
   {
@@ -150,15 +151,6 @@ export const W65C02S_14MHz_constraints: Constraint[] = [
     minNs: 25,
   },
 ];
-
-export interface TimingProfile {
-  id: string;
-  name: string;
-  description: string;
-  signals: AnySignal[];
-  constraints: Constraint[];
-  defaultWindowNs: { tMinNs: number; tMaxNs: number };
-}
 
 export const W65C02S_14MHz: TimingProfile = {
   id: "w65c02s-14mhz",

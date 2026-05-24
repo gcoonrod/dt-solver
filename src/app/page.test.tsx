@@ -10,26 +10,12 @@ import {
 } from "vitest";
 
 import Page from "@/app/page";
-import { solve } from "@/core/solver";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import { useTimingStore } from "@/store/useTimingStore";
 
-function resetStoreToDemo(): void {
-  const profile = W65C02S_14MHz;
-  useTimingStore.setState(
-    {
-      signals: profile.signals,
-      constraints: profile.constraints,
-      solved: solve(profile.signals, profile.constraints, 1000),
-      tMinNs: profile.defaultWindowNs.tMinNs,
-      tMaxNs: profile.defaultWindowNs.tMaxNs,
-      cursorTimeNs: 35.7,
-      hoveredConstraintId: null,
-      selectedSignalId: null,
-    },
-    false,
-  );
-}
+// Captured once at module load so `beforeEach` reverts mutations from prior
+// tests without re-deriving from a profile constant — the store already solves
+// at bootstrap, so re-solving here would be wasted work.
+const INITIAL_STORE_STATE = useTimingStore.getInitialState();
 
 // jsdom returns 0 for clientHeight, which would make the splitter drag math
 // divide by zero. Stub a non-zero height on the prototype for the duration of
@@ -69,7 +55,7 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  resetStoreToDemo();
+  useTimingStore.setState(INITIAL_STORE_STATE, true);
 });
 
 afterEach(() => {
@@ -144,15 +130,15 @@ describe("<Page /> integration", () => {
     fireEvent.keyDown(window, { key: "=", metaKey: true });
     const wZoomed =
       useTimingStore.getState().tMaxNs - useTimingStore.getState().tMinNs;
-    const wDefault =
-      W65C02S_14MHz.defaultWindowNs.tMaxNs - W65C02S_14MHz.defaultWindowNs.tMinNs;
+    const { defaultWindowNs } = useTimingStore.getState().activeProfile;
+    const wDefault = defaultWindowNs.tMaxNs - defaultWindowNs.tMinNs;
     expect(wZoomed).toBeLessThan(wDefault);
 
     fireEvent.keyDown(window, { key: "f" });
 
     const { tMinNs, tMaxNs } = useTimingStore.getState();
-    expect(tMinNs).toBe(W65C02S_14MHz.defaultWindowNs.tMinNs);
-    expect(tMaxNs).toBe(W65C02S_14MHz.defaultWindowNs.tMaxNs);
+    expect(tMinNs).toBe(defaultWindowNs.tMinNs);
+    expect(tMaxNs).toBe(defaultWindowNs.tMaxNs);
   });
 
   it("'ArrowRight' advances the cursor by 1 ns", () => {
