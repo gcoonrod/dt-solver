@@ -131,8 +131,8 @@ The form SHALL present three signal types as selectable chips:
 | Type ID | Label  | Symbol  | Underlying     | Same-signal config |
 |---------|--------|---------|----------------|--------------------|
 | `CLOCK` | Clock  | `clk`   | `type: 'CLOCK'` | clock params       |
-| `BUS`   | Bus    | `[n:0]` | `type: 'DATA'`, `widthBits ≥ 2` | initial state + transitions |
-| `LINE`  | Line   | `1b`    | `type: 'DATA'`, no `widthBits` | initial state + transitions |
+| `BUS`   | Bus    | `[n:0]` | `type: 'BUS'`, `widthBits ≥ 2` | initial state + transitions |
+| `LINE`  | Line   | `1b`    | `type: 'LINE'` | initial state + transitions |
 
 - Switching the type SHALL re-seed type-specific defaults: `baseState`,
   `widthBits`, and the `transitions[]` array.
@@ -331,8 +331,8 @@ Submitting the form SHALL dispatch `addSignal` with the form's current
 values (assigning a fresh id) and SHALL dispatch
 `closeSignalBuilder`.
 
-- The new signal's `type` SHALL match the active type chip (CLOCK or
-  DATA, with `widthBits ≥ 2` when the chip is BUS).
+- The new signal's `type` SHALL match the active type chip (`CLOCK`,
+  `LINE`, or `BUS`, with `widthBits ≥ 2` when the chip is `BUS`).
 - All other fields SHALL match the form state at submit time.
 - The signal id SHALL be unique and non-empty.
 - After submit, `signalBuilderOpen` SHALL be `false` and

@@ -302,8 +302,8 @@ function BuilderShell({ initial, onClose }: BuilderShellProps) {
       name: normalizedName,
       description,
       color,
-      riseTimeNs: Number(riseTimeNs) || 0,
-      fallTimeNs: Number(fallTimeNs) || 0,
+      riseTimeNs: Math.max(0, Number(riseTimeNs) || 0),
+      fallTimeNs: Math.max(0, Number(fallTimeNs) || 0),
     };
     if (typeId === "CLOCK") {
       return {
@@ -348,8 +348,13 @@ function BuilderShell({ initial, onClose }: BuilderShellProps) {
       if (transitions.length === 0) return { ok: false, reason: "no-transitions" as const };
       if (transitions.some((t) => !Number.isFinite(t.timeNs))) return { ok: false, reason: "bad-time" as const };
     }
+    const rise = Number(riseTimeNs);
+    const fall = Number(fallTimeNs);
+    if (rise < 0 || !Number.isFinite(rise) || fall < 0 || !Number.isFinite(fall)) {
+      return { ok: false, reason: "bad-slew" as const };
+    }
     return { ok: true, reason: undefined };
-  }, [normalizedName, typeId, frequencyValue, frequencyUnit, dutyHighPct, transitions]);
+  }, [normalizedName, typeId, frequencyValue, frequencyUnit, dutyHighPct, transitions, riseTimeNs, fallTimeNs]);
 
   const nameCollision = signals.some((s) => s.name === normalizedName);
 
@@ -524,6 +529,7 @@ function explainValidity(reason?: string): string {
     case "bad-duty": return "Duty must be between 0% and 100%";
     case "no-transitions": return "At least one transition is required";
     case "bad-time": return "Transition time must be a number";
+    case "bad-slew": return "Rise/fall time must be non-negative";
     default: return "";
   }
 }
