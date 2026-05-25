@@ -200,7 +200,7 @@ function BuilderShell({ signals, initial, onCancel, onSubmit }: BuilderShellProp
 
   const [target, setTarget] = useState<SignalReference>(() => {
     if (initial?.target) return initial.target;
-    const dat = signals.find((s) => s.type === "DATA");
+    const dat = signals.find((s) => s.type !== "CLOCK");
     if (dat) return { signalId: dat.id, edgeDirection: "TRANSITION" };
     return {
       signalId: signals[1]?.id ?? signals[0]?.id ?? "",
@@ -621,7 +621,7 @@ function FormSignalRef({
   const typeSuffix =
     sig?.type === "CLOCK"
       ? `${sig.frequencyMHz}M`
-      : sig?.widthBits
+      : sig?.type === "BUS"
         ? `[${sig.widthBits - 1}:0]`
         : sig?.type
           ? sig.type.toLowerCase()
@@ -1058,15 +1058,7 @@ function PreviewTraceRow({ sig, yTop, tMin, tMax, tToX }: PreviewTraceRowProps) 
   if (sig.type === "CLOCK") {
     return <ClockTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;
   }
-  const isBus =
-    (sig.widthBits != null && sig.widthBits > 1) ||
-    sig.transitions.some(
-      (t) =>
-        t.newState === "VALID" ||
-        t.newState === "INVALID" ||
-        t.newState === "HIGH_Z",
-    );
-  if (isBus) {
+  if (sig.type === "BUS") {
     return <BusTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;
   }
   return <LineTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;

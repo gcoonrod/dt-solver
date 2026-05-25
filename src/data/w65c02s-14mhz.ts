@@ -35,7 +35,7 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
   },
   {
     id: "addr",
-    type: "DATA",
+    type: "BUS",
     name: "ADDR[15:0]",
     description: "CPU address bus",
     color: "#f59e0b",
@@ -52,7 +52,7 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
   },
   {
     id: "rw",
-    type: "DATA",
+    type: "LINE",
     name: "R/W̄",
     description: "Read (high) / write (low)",
     color: "#a78bfa",
@@ -66,7 +66,7 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
   },
   {
     id: "data",
-    type: "DATA",
+    type: "BUS",
     name: "DATA[7:0]",
     description: "Memory data bus",
     color: "#f472b6",
@@ -84,7 +84,7 @@ export const W65C02S_14MHz_signals: AnySignal[] = [
   },
   {
     id: "cs",
-    type: "DATA",
+    type: "LINE",
     name: "CS̄",
     description: "Chip select (active low)",
     color: "#a3e635",

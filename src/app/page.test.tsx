@@ -167,6 +167,21 @@ describe("<Page /> integration", () => {
     expect(screen.queryByRole("dialog", { name: /constraint builder/i })).not.toBeInTheDocument();
   });
 
+  it("mounts the SignalBuilder modal in response to openSignalBuilder/closeSignalBuilder", () => {
+    render(<Page />);
+    expect(screen.queryByRole("dialog", { name: /signal builder/i })).not.toBeInTheDocument();
+
+    act(() => {
+      useTimingStore.getState().openSignalBuilder();
+    });
+    expect(screen.getByRole("dialog", { name: /signal builder/i })).toBeInTheDocument();
+
+    act(() => {
+      useTimingStore.getState().closeSignalBuilder();
+    });
+    expect(screen.queryByRole("dialog", { name: /signal builder/i })).not.toBeInTheDocument();
+  });
+
   it("shortcuts are ignored when the event target is an <input>", () => {
     render(<Page />);
 

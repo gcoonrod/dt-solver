@@ -9,7 +9,7 @@ import {
   stateAt,
 } from "@/core/solver";
 import type { Constraint } from "@/types/constraint";
-import type { ClockSignal, DataSignal } from "@/types/signal";
+import type { BusSignal, ClockSignal } from "@/types/signal";
 
 const PRECISION = 6;
 
@@ -25,13 +25,14 @@ function makeClock(overrides: Partial<ClockSignal> = {}): ClockSignal {
   };
 }
 
-function makeData(overrides: Partial<DataSignal> = {}): DataSignal {
+function makeBus(overrides: Partial<BusSignal> = {}): BusSignal {
   return {
     id: "dat",
     name: "DAT",
-    type: "DATA",
+    type: "BUS",
     baseState: "INVALID",
     transitions: [],
+    widthBits: 8,
     ...overrides,
   };
 }
@@ -86,7 +87,7 @@ describe("stateAt", () => {
   });
 
   it("walks data-signal transitions in order", () => {
-    const dat = makeData({
+    const dat = makeBus({
       baseState: "INVALID",
       transitions: [
         { id: "t1", timeNs: 10, newState: "VALID", direction: "TRANSITION", value: "0xAA" },
@@ -127,7 +128,7 @@ describe("resolveReference", () => {
 describe("evaluateConstraint — SETUP", () => {
   it("uses anchor.startNs and target.endNs for the worst-case window", () => {
     const clk = makeClock({ frequencyMHz: 5, fallTimeNs: 2 }); // fall mid 100
-    const dat = makeData({
+    const dat = makeBus({
       riseTimeNs: 4, // TRANSITION dir uses max(rise, fall) = 4
       transitions: [
         { id: "v", timeNs: 90, newState: "VALID", direction: "TRANSITION", value: "0xC0" },
@@ -153,7 +154,7 @@ describe("evaluateConstraint — SETUP", () => {
 describe("evaluateConstraint — HOLD", () => {
   it("uses anchor.endNs and target.startNs", () => {
     const clk = makeClock({ frequencyMHz: 5, fallTimeNs: 2 }); // fall mid 100; end 101
-    const dat = makeData({
+    const dat = makeBus({
       riseTimeNs: 4,
       fallTimeNs: 4,
       transitions: [
@@ -181,7 +182,7 @@ describe("evaluateConstraint — PROP_DELAY", () => {
   it("uses anchor.endNs and target.endNs, and the worst case is the LARGEST margin", () => {
     // Clock period 100 ns: rises at 0, 100, 200, ...
     const clk = makeClock({ frequencyMHz: 10, riseTimeNs: 2 });
-    const dat = makeData({
+    const dat = makeBus({
       riseTimeNs: 4,
       fallTimeNs: 4,
       transitions: [
@@ -210,7 +211,7 @@ describe("evaluateConstraint — PROP_DELAY", () => {
 describe("solve", () => {
   it("maps every constraint to a result", () => {
     const clk = makeClock({ frequencyMHz: 10 });
-    const dat = makeData({
+    const dat = makeBus({
       transitions: [
         { id: "v", timeNs: 50, newState: "VALID", direction: "TRANSITION" },
       ],

@@ -4,7 +4,7 @@ import {
   formatChannelLabelDisplay,
   formatSignalDisplay,
 } from "@/components/features/signalDisplay";
-import type { ClockSignal, DataSignal } from "@/types/signal";
+import type { BusSignal, ClockSignal, LineSignal } from "@/types/signal";
 
 const clock: ClockSignal = {
   id: "clk",
@@ -15,38 +15,40 @@ const clock: ClockSignal = {
   phaseOffsetNs: 0,
 };
 
-const dataWithValue: DataSignal = {
+const dataWithValue: BusSignal = {
   id: "bus",
-  type: "DATA",
+  type: "BUS",
   name: "BUS",
   baseState: "HIGH_Z",
+  widthBits: 8,
   transitions: [
     { id: "t-0", timeNs: 0, newState: "HIGH_Z", direction: "TRANSITION" },
     { id: "t-1", timeNs: 10, newState: "VALID", direction: "TRANSITION", value: "0xA9" },
   ],
 };
 
-const dataPlainHigh: DataSignal = {
+const dataPlainHigh: LineSignal = {
   id: "rw",
-  type: "DATA",
+  type: "LINE",
   name: "RW",
   baseState: "HIGH",
   transitions: [{ id: "rw-0", timeNs: 0, newState: "HIGH", direction: "RISING" }],
 };
 
-const dataPlainLow: DataSignal = {
+const dataPlainLow: LineSignal = {
   id: "rw",
-  type: "DATA",
+  type: "LINE",
   name: "RW",
   baseState: "LOW",
   transitions: [{ id: "rw-0", timeNs: 0, newState: "LOW", direction: "FALLING" }],
 };
 
-const dataInvalid: DataSignal = {
+const dataInvalid: BusSignal = {
   id: "addr",
-  type: "DATA",
+  type: "BUS",
   name: "ADDR",
   baseState: "INVALID",
+  widthBits: 16,
   transitions: [{ id: "a-0", timeNs: 0, newState: "INVALID", direction: "TRANSITION" }],
 };
 

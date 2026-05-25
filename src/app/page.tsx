@@ -1,6 +1,7 @@
 "use client";
 
 import ConstraintBuilder from "@/components/features/ConstraintBuilder";
+import SignalBuilder from "@/components/features/SignalBuilder";
 import WaveformWorkspace from "@/components/features/WaveformWorkspace";
 import ComponentLibrary from "@/components/panels/ComponentLibrary";
 import ConstraintInspector from "@/components/panels/ConstraintInspector";
@@ -42,6 +43,7 @@ export default function Page() {
       </div>
 
       <ConstraintBuilder />
+      <SignalBuilder />
     </div>
   );
 }

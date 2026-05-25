@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { useTimingStore } from "@/store/useTimingStore";
-import type { AnySignal } from "@/types/signal";
+import type { AnySignal, SignalTypeId } from "@/types/signal";
 
 // ---- icons ----------------------------------------------------------------
 const ICON_PATHS: Record<string, React.ReactNode> = {
@@ -58,7 +58,7 @@ export function IconCL({ name, size = 14, className = "", strokeWidth = 1.75 }: 
 }
 
 const signalIconName = (type: AnySignal["type"]): string =>
-  type === "CLOCK" ? "square-wave" : "pulse";
+  type === "CLOCK" ? "square-wave" : type === "BUS" ? "bus" : "pulse";
 
 function formatSlewMeta(rise: number | undefined, fall: number | undefined): string | null {
   if ((rise == null || rise === 0) && (fall == null || fall === 0)) return null;
@@ -91,28 +91,15 @@ export default function ComponentLibrary() {
   const selectedSignalId = useTimingStore((s) => s.selectedSignalId);
   const selectSignal = useTimingStore((s) => s.selectSignal);
   const removeSignal = useTimingStore((s) => s.removeSignal);
-  const addSignal = useTimingStore((s) => s.addSignal);
 
   const [open, setOpen] = useState(true);
 
   const handleAdd = () => {
-    const palette = ["#22d3ee", "#f59e0b", "#a78bfa", "#f472b6", "#a3e635", "#fb7185", "#38bdf8", "#34d399"];
-    const used = new Set(signals.map((s) => s.color));
-    const color = palette.find((c) => !used.has(c)) || palette[signals.length % palette.length];
-    const n = signals.length + 1;
-    addSignal({
-      id: `sig${n}-${Date.now().toString(36)}`,
-      type: "DATA",
-      name: `SIG${n}`,
-      description: "New signal",
-      color,
-      baseState: "LOW",
-      transitions: [
-        { id: "t1", timeNs: 0, newState: "LOW", direction: "FALLING" },
-        { id: "t2", timeNs: 50, newState: "HIGH", direction: "RISING" },
-        { id: "t3", timeNs: 120, newState: "LOW", direction: "FALLING" },
-      ],
-    });
+    useTimingStore.getState().openSignalBuilder();
+  };
+
+  const handleAddOfType = (mode: SignalTypeId) => {
+    useTimingStore.getState().openSignalBuilder({ mode });
   };
 
   const clockCount = signals.filter((s) => s.type === "CLOCK").length;
@@ -195,14 +182,15 @@ export default function ComponentLibrary() {
           Add Signal
         </button>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
-          {[
-            { label: "Clock", icon: "square-wave" },
-            { label: "Bus", icon: "bus" },
-            { label: "Line", icon: "pulse" },
-          ].map((t) => (
+          {([
+            { label: "Clock", icon: "square-wave", mode: "CLOCK" as const },
+            { label: "Bus", icon: "bus", mode: "BUS" as const },
+            { label: "Line", icon: "pulse", mode: "LINE" as const },
+          ] as const).map((t) => (
             <button
               key={t.label}
-              className="flex items-center justify-center gap-1 py-1.5 rounded-sm bg-[#0a0e14] hover:bg-slate-800/60 border border-slate-800/60 text-slate-400 text-[10.5px]"
+              onClick={() => handleAddOfType(t.mode)}
+              className="flex items-center justify-center gap-1 py-1.5 rounded-sm bg-[#0a0e14] hover:bg-slate-800/60 border border-slate-800/60 text-slate-400 hover:text-slate-200 text-[10.5px]"
             >
               <IconCL name={t.icon} size={10} />
               {t.label}
@@ -226,7 +214,7 @@ function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
   const baseMeta =
     sig.type === "CLOCK"
       ? `${sig.frequencyMHz}M`
-      : sig.widthBits
+      : sig.type === "BUS"
         ? `[${sig.widthBits - 1}:0]`
         : "1b";
   const slewMeta = formatSlewMeta(sig.riseTimeNs, sig.fallTimeNs);
