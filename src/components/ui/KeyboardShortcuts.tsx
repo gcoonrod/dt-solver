@@ -23,8 +23,8 @@ export default function KeyboardShortcuts({ onEsc, onSubmit }: KeyboardShortcuts
         submitRef.current();
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
   return null;

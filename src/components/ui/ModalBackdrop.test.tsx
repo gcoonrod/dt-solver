@@ -41,7 +41,7 @@ describe("ModalBackdrop", () => {
 
   it("renders children", () => {
     render(
-      <ModalBackdrop onClose={vi.fn()}>
+      <ModalBackdrop onClose={vi.fn()} ariaLabel="Test">
         <span data-testid="child">hello</span>
       </ModalBackdrop>,
     );

@@ -4,7 +4,7 @@ interface ModalBackdropProps {
   children: React.ReactNode;
   onClose: () => void;
   className?: string;
-  ariaLabel?: string;
+  ariaLabel: string;
 }
 
 export default function ModalBackdrop({ children, onClose, className, ariaLabel }: ModalBackdropProps) {

@@ -7,28 +7,28 @@ describe("KeyboardShortcuts", () => {
   it("invokes onEsc when Escape is pressed", () => {
     const onEsc = vi.fn();
     render(<KeyboardShortcuts onEsc={onEsc} onSubmit={vi.fn()} />);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(onEsc).toHaveBeenCalledTimes(1);
   });
 
   it("invokes onSubmit when Meta+Enter is pressed", () => {
     const onSubmit = vi.fn();
     render(<KeyboardShortcuts onEsc={vi.fn()} onSubmit={onSubmit} />);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it("invokes onSubmit when Ctrl+Enter is pressed", () => {
     const onSubmit = vi.fn();
     render(<KeyboardShortcuts onEsc={vi.fn()} onSubmit={onSubmit} />);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true }));
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it("does not invoke onSubmit on plain Enter", () => {
     const onSubmit = vi.fn();
     render(<KeyboardShortcuts onEsc={vi.fn()} onSubmit={onSubmit} />);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(onSubmit).not.toHaveBeenCalled();
   });
 

@@ -24,6 +24,7 @@ describe("TypeChipSelector", () => {
     getId: (t: TestType) => t.id,
     getLabel: (t: TestType) => t.label,
     getBlurb: (t: TestType) => t.blurb,
+    getActiveClass: () => "bg-sky-500/10 border-sky-500/30 text-sky-300 font-medium",
   };
 
   it("renders one button per type", () => {

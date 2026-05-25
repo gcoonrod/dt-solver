@@ -7,7 +7,7 @@ interface TypeChipSelectorProps<T> {
   getIcon?: (t: T) => React.ReactNode;
   getSymbol?: (t: T) => string;
   getBlurb?: (t: T) => string;
-  getActiveClass?: (t: T) => string;
+  getActiveClass: (t: T) => string;
   columns?: number;
 }
 
@@ -28,7 +28,7 @@ export default function TypeChipSelector<T>({
       {types.map((t) => {
         const id = getId(t);
         const active = id === value;
-        const activeClass = getActiveClass?.(t) ?? "bg-sky-500/10 border-sky-500/30 text-sky-300 font-medium";
+        const activeClass = getActiveClass(t);
         return (
           <button
             key={id}

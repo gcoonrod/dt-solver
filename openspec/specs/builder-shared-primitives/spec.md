@@ -157,7 +157,7 @@ A reusable `ColorDotPicker` component SHALL exist at `src/components/ui/ColorDot
 
 A reusable `TypeChipSelector` component SHALL exist at `src/components/ui/TypeChipSelector.tsx` that renders a row of selectable type chips given a generic type definition array.
 
-- The component SHALL accept generic props: `types: T[]`, `value: string`, `onChange: (id: string) => void`, `getId: (t: T) => string`, `getLabel: (t: T) => string`, `getIcon?: (t: T) => ReactNode`, `getSwatch?: (t: T) => string`.
+- The component SHALL accept generic props: `types: T[]`, `value: string`, `onChange: (id: string) => void`, `getId: (t: T) => string`, `getLabel: (t: T) => string`, `getIcon?: (t: T) => ReactNode`, `getSymbol?: (t: T) => string`, `getBlurb?: (t: T) => string`, `getActiveClass: (t: T) => string`, `columns?: number`.
 - The active chip (matching `value`) SHALL be visually highlighted with the swatch color.
 - Inactive chips SHALL have a neutral/muted appearance.
 - Clicking a chip SHALL invoke `onChange` with that type's id.

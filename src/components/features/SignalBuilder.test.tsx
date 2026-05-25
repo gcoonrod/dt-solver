@@ -195,7 +195,7 @@ describe("<SignalBuilder />", () => {
     openBuilder();
     const beforeCount = useTimingStore.getState().signals.length;
 
-    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(document, { key: "Escape" });
 
     expect(useTimingStore.getState().signalBuilderOpen).toBe(false);
     expect(useTimingStore.getState().signals.length).toBe(beforeCount);
@@ -206,7 +206,7 @@ describe("<SignalBuilder />", () => {
     openBuilder({ mode: "CLOCK" });
     const beforeCount = useTimingStore.getState().signals.length;
 
-    fireEvent.keyDown(window, { key: "Enter", metaKey: true });
+    fireEvent.keyDown(document, { key: "Enter", metaKey: true });
 
     expect(useTimingStore.getState().signals.length).toBe(beforeCount + 1);
   });
