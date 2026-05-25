@@ -125,7 +125,7 @@ describe("<ConstraintBuilder />", () => {
     openBuilder();
 
     const before = useTimingStore.getState().constraints.length;
-    fireEvent.keyDown(window, { key: "Escape" });
+    fireEvent.keyDown(document, { key: "Escape" });
 
     const s = useTimingStore.getState();
     expect(s.builderOpen).toBe(false);
@@ -137,7 +137,7 @@ describe("<ConstraintBuilder />", () => {
     openBuilder();
 
     const before = useTimingStore.getState().constraints.length;
-    fireEvent.keyDown(window, { key: "Enter", metaKey: true });
+    fireEvent.keyDown(document, { key: "Enter", metaKey: true });
 
     const s = useTimingStore.getState();
     expect(s.builderOpen).toBe(false);
