@@ -4,7 +4,9 @@ import { solve } from "@/core/solver";
 import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import type { Constraint } from "@/types/constraint";
 import type { TimingProfile } from "@/types/profile";
-import type { AnySignal } from "@/types/signal";
+import type { AnySignal, SignalBuilderInitial } from "@/types/signal";
+
+export type { SignalBuilderInitial };
 
 export interface TimingState {
   // ----- domain -----
@@ -29,6 +31,10 @@ export interface TimingState {
   builderOpen: boolean;
   builderInitial: Constraint | null;
 
+  // ----- modal lifecycle (signal builder) -----
+  signalBuilderOpen: boolean;
+  signalBuilderInitial: SignalBuilderInitial | null;
+
   // ----- actions -----
   resolve: () => void;
   setActiveProfile: (profile: TimingProfile) => void;
@@ -44,6 +50,8 @@ export interface TimingState {
   fitView: () => void;
   openBuilder: (initial?: Constraint) => void;
   closeBuilder: () => void;
+  openSignalBuilder: (initial?: SignalBuilderInitial) => void;
+  closeSignalBuilder: () => void;
 }
 
 const profile = W65C02S_14MHz;
@@ -63,6 +71,9 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
 
   builderOpen: false,
   builderInitial: null,
+
+  signalBuilderOpen: false,
+  signalBuilderInitial: null,
 
   resolve() {
     const s = get();
@@ -131,5 +142,11 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
   },
   closeBuilder() {
     set({ builderOpen: false, builderInitial: null });
+  },
+  openSignalBuilder(initial) {
+    set({ signalBuilderOpen: true, signalBuilderInitial: initial ?? null });
+  },
+  closeSignalBuilder() {
+    set({ signalBuilderOpen: false, signalBuilderInitial: null });
   },
 }));

@@ -35,14 +35,26 @@ export interface TransitionEvent {
   value?: string; // Display value for bus signals (e.g., "0xC000")
 }
 
-export interface DataSignal extends BaseSignal {
-  type: 'DATA';
-  baseState: SignalState; // What it defaults to (e.g., HIGH_Z)
-  transitions: TransitionEvent[]; // Order matters, may need to find a different data structure to ensure order is preserved through serialization/deserialization
-  widthBits?: number; // For multi-bit buses (e.g., 16 for ADDR[15:0])
+export interface LineSignal extends BaseSignal {
+  type: 'LINE';
+  baseState: SignalState;
+  transitions: TransitionEvent[];
 }
 
-export type AnySignal = ClockSignal | DataSignal;
+export interface BusSignal extends BaseSignal {
+  type: 'BUS';
+  baseState: SignalState;
+  transitions: TransitionEvent[];
+  widthBits: number; // e.g., 16 for ADDR[15:0]; always ≥ 2
+}
+
+export type DataSignal = LineSignal | BusSignal;
+
+export type AnySignal = ClockSignal | LineSignal | BusSignal;
+
+export type SignalTypeId = AnySignal['type'];
+
+export type SignalBuilderInitial = AnySignal | { mode: SignalTypeId };
 
 /**
  * An edge as an interval rather than an instant. `midNs` is the canonical

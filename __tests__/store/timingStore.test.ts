@@ -30,7 +30,7 @@ describe("useTimingStore — re-solve cascade", () => {
   it("addConstraint(c) appends a solved entry for c.id", () => {
     const sigs = useTimingStore.getState().signals;
     const clk = sigs.find((s) => s.type === "CLOCK")!;
-    const dat = sigs.find((s) => s.type === "DATA")!;
+    const dat = sigs.find((s) => s.type === "BUS")!;
     const c: Constraint = {
       id: "test-c",
       name: "Test C",
@@ -49,7 +49,7 @@ describe("useTimingStore — re-solve cascade", () => {
     const sig: AnySignal = {
       id: "synthetic-sig",
       name: "synthetic",
-      type: "DATA",
+      type: "LINE",
       baseState: "LOW",
       transitions: [
         { id: "t1", timeNs: 10, newState: "HIGH", direction: "RISING" },
@@ -161,7 +161,7 @@ describe("useTimingStore — activeProfile", () => {
     };
     const altData: AnySignal = {
       id: "d2",
-      type: "DATA",
+      type: "LINE",
       name: "D2",
       baseState: "LOW",
       transitions: [
@@ -221,6 +221,63 @@ describe("useTimingStore — activeProfile", () => {
     expect(s.cursorTimeNs).toBe(42);
     expect(s.hoveredConstraintId).toBe("tads");
     expect(s.selectedSignalId).toBe("phi2");
+  });
+});
+
+describe("useTimingStore — signal builder modal lifecycle", () => {
+  it("bootstraps with signalBuilderOpen=false and signalBuilderInitial=null", () => {
+    expect(useTimingStore.getState().signalBuilderOpen).toBe(false);
+    expect(useTimingStore.getState().signalBuilderInitial).toBeNull();
+  });
+
+  it("openSignalBuilder() with no argument opens with signalBuilderInitial=null", () => {
+    useTimingStore.getState().openSignalBuilder();
+    const s = useTimingStore.getState();
+    expect(s.signalBuilderOpen).toBe(true);
+    expect(s.signalBuilderInitial).toBeNull();
+  });
+
+  it("openSignalBuilder({ mode: 'CLOCK' }) seeds with the mode hint", () => {
+    useTimingStore.getState().openSignalBuilder({ mode: "CLOCK" });
+    const s = useTimingStore.getState();
+    expect(s.signalBuilderOpen).toBe(true);
+    expect(s.signalBuilderInitial).toEqual({ mode: "CLOCK" });
+  });
+
+  it("openSignalBuilder(signal) seeds with the full signal", () => {
+    const sig: AnySignal = {
+      id: "test-clk",
+      type: "CLOCK",
+      name: "TestCLK",
+      frequencyMHz: 10,
+      dutyCycle: 0.5,
+      phaseOffsetNs: 0,
+    };
+    useTimingStore.getState().openSignalBuilder(sig);
+    const s = useTimingStore.getState();
+    expect(s.signalBuilderOpen).toBe(true);
+    expect(s.signalBuilderInitial).toBe(sig);
+  });
+
+  it("closeSignalBuilder() resets both keys", () => {
+    useTimingStore.getState().openSignalBuilder({ mode: "BUS" });
+    useTimingStore.getState().closeSignalBuilder();
+    const s = useTimingStore.getState();
+    expect(s.signalBuilderOpen).toBe(false);
+    expect(s.signalBuilderInitial).toBeNull();
+  });
+
+  it("open then close does not mutate signals, constraints, or solved", () => {
+    const before = useTimingStore.getState();
+    const sigsRef = before.signals;
+    const consRef = before.constraints;
+    const solvedRef = before.solved;
+    useTimingStore.getState().openSignalBuilder();
+    useTimingStore.getState().closeSignalBuilder();
+    const after = useTimingStore.getState();
+    expect(after.signals).toBe(sigsRef);
+    expect(after.constraints).toBe(consRef);
+    expect(after.solved).toBe(solvedRef);
   });
 });
 

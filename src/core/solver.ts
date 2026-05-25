@@ -182,7 +182,7 @@ export function evaluateConstraint(
       aPoint = a.startNs;
       // Target should occur strictly before anchor; prefer transition→VALID.
       let cands = targetEvts.filter((e) => e.endNs < aPoint);
-      if (targetSig.type === "DATA") {
+      if (targetSig.type === "BUS") {
         const valid = cands.filter((e) => e.newState === "VALID");
         if (valid.length) cands = valid;
       }
@@ -200,7 +200,7 @@ export function evaluateConstraint(
     } else if (constraint.type === "PROP_DELAY") {
       aPoint = a.endNs;
       const cands = targetEvts.filter((e) => e.endNs > aPoint);
-      if (targetSig.type === "DATA") {
+      if (targetSig.type === "BUS") {
         const valid = cands.find((e) => e.newState === "VALID");
         pick = valid ?? cands[0];
       } else {

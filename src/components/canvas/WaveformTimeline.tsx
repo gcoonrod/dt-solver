@@ -284,13 +284,7 @@ function SignalRow({ sig, yTop, sigH, tMin, tMax, tToX }: SignalRowProps) {
   if (sig.type === "CLOCK") {
     return <ClockTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;
   }
-  // Bus vs single-bit line. Bus if widthBits>1 or any VALID/INVALID/HIGH_Z states.
-  const isBus =
-    (sig.widthBits != null && sig.widthBits > 1) ||
-    sig.transitions.some(
-      (t) => t.newState === "VALID" || t.newState === "INVALID" || t.newState === "HIGH_Z",
-    );
-  if (isBus) {
+  if (sig.type === "BUS") {
     return <BusTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;
   }
   return <LineTrace sig={sig} yTop={yTop} sigH={sigH} tMin={tMin} tMax={tMax} tToX={tToX} />;
