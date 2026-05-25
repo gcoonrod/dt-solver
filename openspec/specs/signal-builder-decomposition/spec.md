@@ -10,7 +10,7 @@ The contract for the decomposed SignalBuilder sub-directory structure at `src/co
 
 The SignalBuilder implementation SHALL be organized as a directory at `src/components/features/signal-builder/` with focused sub-modules, exposed via a barrel export.
 
-- `src/components/features/signal-builder/index.ts` SHALL exist and SHALL export the root `SignalBuilder` component as a default export.
+- `src/components/features/signal-builder/index.tsx` SHALL exist and SHALL export the root `SignalBuilder` component as a default export.
 - `src/components/features/SignalBuilder.tsx` SHALL remain as a thin re-export shell: `export { default } from './signal-builder'`.
 - The following sub-modules SHALL exist within the directory:
   - `BuilderShell.tsx` -- owns all form state and composes sub-components
@@ -25,7 +25,7 @@ The SignalBuilder implementation SHALL be organized as a directory at `src/compo
 
 #### Scenario: Barrel export provides default SignalBuilder
 
-- **WHEN** `src/components/features/signal-builder/index.ts` is imported
+- **WHEN** `src/components/features/signal-builder/index.tsx` is imported
 - **THEN** its default export SHALL be a valid React component
 - **AND** that component SHALL behave identically to the current monolithic SignalBuilder
 

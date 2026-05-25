@@ -281,7 +281,7 @@ SVG path generation).
 - **WHEN** the filesystem is inspected
 - **THEN** `src/components/features/ConstraintBuilder.tsx` SHALL exist
 - **AND** `src/components/features/ConstraintBuilder.test.tsx` SHALL exist
-- **AND** `src/components/features/constraint-builder/index.ts` SHALL exist
+- **AND** `src/components/features/constraint-builder/index.tsx` SHALL exist
 
 #### Scenario: Root file is a thin re-export shell
 

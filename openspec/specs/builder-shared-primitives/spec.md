@@ -10,7 +10,7 @@ The contract for 7 shared UI atom components extracted to `src/components/ui/` d
 
 A reusable `ModalBackdrop` component SHALL exist at `src/components/ui/ModalBackdrop.tsx` that renders a fixed full-viewport overlay with backdrop blur and supports click-outside-to-close behavior.
 
-- The component SHALL accept props: `children: ReactNode`, `onClose: () => void`, and optional `className?: string`.
+- The component SHALL accept props: `children: ReactNode`, `onClose: () => void`, `ariaLabel: string`, and optional `className?: string`.
 - The component SHALL render a `<div>` with `role="dialog"`, `aria-modal="true"`, and `position: fixed; inset: 0; z-index: 50`.
 - The component SHALL apply a dark translucent background (`rgba(2, 6, 12, 0.66)`) and `backdrop-filter: blur(4px)`.
 - Clicking directly on the backdrop (not on children) SHALL invoke `onClose`.
@@ -28,8 +28,8 @@ A reusable `ModalBackdrop` component SHALL exist at `src/components/ui/ModalBack
 
 #### Scenario: Backdrop renders with correct ARIA attributes
 
-- **WHEN** the ModalBackdrop is rendered
-- **THEN** the root element SHALL have `role="dialog"` and `aria-modal="true"`
+- **WHEN** the ModalBackdrop is rendered with `ariaLabel="Test dialog"`
+- **THEN** the root element SHALL have `role="dialog"`, `aria-modal="true"`, and `aria-label="Test dialog"`
 
 ### Requirement: FormSection component provides labeled form field layout
 

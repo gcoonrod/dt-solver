@@ -372,7 +372,7 @@ SVG path generation).
 - **WHEN** the filesystem is inspected
 - **THEN** `src/components/features/SignalBuilder.tsx` SHALL exist
 - **AND** `src/components/features/SignalBuilder.test.tsx` SHALL exist
-- **AND** `src/components/features/signal-builder/index.ts` SHALL exist
+- **AND** `src/components/features/signal-builder/index.tsx` SHALL exist
 
 #### Scenario: Root file is a thin re-export shell
 

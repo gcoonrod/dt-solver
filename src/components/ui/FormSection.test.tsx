@@ -28,8 +28,7 @@ describe("FormSection", () => {
         <input />
       </FormSection>,
     );
-    const kbdSpan = container.querySelector(".text-\\[9\\.5px\\]");
-    expect(kbdSpan).not.toBeInTheDocument();
+    expect(container.querySelector("span")).not.toBeInTheDocument();
   });
 
   it("renders action slot when provided", () => {

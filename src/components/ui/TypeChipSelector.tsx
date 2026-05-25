@@ -39,7 +39,7 @@ export default function TypeChipSelector<T>({
                 : "bg-[#0a0e14] border-slate-800/80 text-slate-300 hover:text-slate-100 hover:border-slate-700"
             }`}
             title={getBlurb?.(t)}
-            aria-label={`${getSymbol?.(t) ?? ""} ${getLabel(t)}`}
+            aria-label={`${getSymbol?.(t) ?? ""} ${getLabel(t)}`.trim()}
           >
             {getIcon?.(t)}
             <span>{getLabel(t)}</span>

@@ -216,7 +216,7 @@ export default function BuilderShell({ initial, onClose }: BuilderShellProps) {
     const id = `sig-${Date.now().toString(36)}`;
     const sig = { ...draft, id };
     addSignal(sig);
-    useTimingStore.getState().closeSignalBuilder();
+    onClose();
   };
 
   // Live readout for header pill

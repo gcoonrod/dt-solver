@@ -10,7 +10,7 @@ The contract for the decomposed ConstraintBuilder sub-directory structure at `sr
 
 The ConstraintBuilder implementation SHALL be organized as a directory at `src/components/features/constraint-builder/` with focused sub-modules, exposed via a barrel export.
 
-- `src/components/features/constraint-builder/index.ts` SHALL exist and SHALL export the root `ConstraintBuilder` component as a default export.
+- `src/components/features/constraint-builder/index.tsx` SHALL exist and SHALL export the root `ConstraintBuilder` component as a default export.
 - `src/components/features/ConstraintBuilder.tsx` SHALL remain as a thin re-export shell: `export { default } from './constraint-builder'`.
 - The following sub-modules SHALL exist within the directory:
   - `BuilderShell.tsx` -- owns all form state and composes sub-components
@@ -24,7 +24,7 @@ The ConstraintBuilder implementation SHALL be organized as a directory at `src/c
 
 #### Scenario: Barrel export provides default ConstraintBuilder
 
-- **WHEN** `src/components/features/constraint-builder/index.ts` is imported
+- **WHEN** `src/components/features/constraint-builder/index.tsx` is imported
 - **THEN** its default export SHALL be a valid React component
 - **AND** that component SHALL behave identically to the current monolithic ConstraintBuilder
 
