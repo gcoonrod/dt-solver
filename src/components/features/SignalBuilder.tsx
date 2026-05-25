@@ -149,9 +149,10 @@ function defaultTransitions(typeId: SignalTypeId): TransitionEvent[] {
   ];
 }
 
-function directionForState(state: SignalState): EdgeDirection {
-  if (state === "HIGH" || state === "VALID") return "RISING";
-  if (state === "LOW" || state === "INVALID") return "FALLING";
+function directionForState(state: SignalState, typeId: SignalTypeId): EdgeDirection {
+  if (typeId === "BUS") return "TRANSITION";
+  if (state === "HIGH") return "RISING";
+  if (state === "LOW") return "FALLING";
   return "TRANSITION";
 }
 
@@ -292,12 +293,13 @@ function BuilderShell({ initial, onClose }: BuilderShellProps) {
   }, [typeId, signals.length]);
 
   const displayName = nameTouched ? nameValue : autoName;
+  const normalizedName = displayName.trim();
 
   // Build draft signal
   const draft: AnySignal = useMemo(() => {
     const base = {
       id: "sb-draft",
-      name: displayName,
+      name: normalizedName,
       description,
       color,
       riseTimeNs: Number(riseTimeNs) || 0,
@@ -329,27 +331,27 @@ function BuilderShell({ initial, onClose }: BuilderShellProps) {
       transitions: sorted,
     };
   }, [
-    displayName, description, color, riseTimeNs, fallTimeNs, typeId,
+    normalizedName, description, color, riseTimeNs, fallTimeNs, typeId,
     frequencyValue, frequencyUnit, dutyHighPct, phaseOffsetNs,
     baseState, transitions, widthBits,
   ]);
 
   // Validation
   const validity = useMemo(() => {
-    if (displayName.trim().length === 0) return { ok: false, reason: "empty-name" as const };
+    if (normalizedName.length === 0) return { ok: false, reason: "empty-name" as const };
     if (typeId === "CLOCK") {
       const freq = Number(frequencyValue) * FREQ_TO_MHZ[frequencyUnit];
       if (freq <= 0 || !Number.isFinite(freq)) return { ok: false, reason: "bad-freq" as const };
       const duty = Number(dutyHighPct);
-      if (duty <= 0 || duty >= 100) return { ok: false, reason: "bad-duty" as const };
+      if (!Number.isFinite(duty) || duty <= 0 || duty >= 100) return { ok: false, reason: "bad-duty" as const };
     } else {
       if (transitions.length === 0) return { ok: false, reason: "no-transitions" as const };
       if (transitions.some((t) => !Number.isFinite(t.timeNs))) return { ok: false, reason: "bad-time" as const };
     }
     return { ok: true, reason: undefined };
-  }, [displayName, typeId, frequencyValue, frequencyUnit, dutyHighPct, transitions]);
+  }, [normalizedName, typeId, frequencyValue, frequencyUnit, dutyHighPct, transitions]);
 
-  const nameCollision = signals.some((s) => s.name === displayName.trim());
+  const nameCollision = signals.some((s) => s.name === normalizedName);
 
   const submit = () => {
     if (!validity.ok) return;
@@ -1205,7 +1207,7 @@ function SBTransitionsEditor({ typeId, transitions, setTransitions }: SBTransiti
       id: `sb-t${Date.now().toString(36)}`,
       timeNs: lastTime + 25,
       newState: nextState,
-      direction: directionForState(nextState),
+      direction: directionForState(nextState, typeId),
       ...(isBus && nextState === "VALID" ? { value: "0x00" } : {}),
     };
     setTransitions([...transitions, newRow]);
@@ -1220,7 +1222,7 @@ function SBTransitionsEditor({ typeId, transitions, setTransitions }: SBTransiti
       if (t.id !== id) return t;
       const merged = { ...t, ...patch };
       if (patch.newState) {
-        merged.direction = directionForState(patch.newState);
+        merged.direction = directionForState(patch.newState, typeId);
         if (isBus && patch.newState !== "VALID") {
           delete merged.value;
         }
@@ -1385,7 +1387,7 @@ function SBAppearanceRow({ color, setColor, description, setDescription, signals
                 className={`relative w-6 h-6 rounded-sm transition ${active ? "ring-2 ring-offset-1 ring-offset-[#0d1117]" : ""} ${inUse && !active ? "opacity-40" : ""}`}
                 style={{
                   background: c,
-                  ...(active ? { ringColor: c } : {}),
+                  ...(active ? { "--tw-ring-color": c } as React.CSSProperties : {}),
                 }}
                 title={c}
                 aria-label={`Color ${c}`}
