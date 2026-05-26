@@ -29,7 +29,7 @@ export function getIc(id: string): IcFullRow | null {
 export function createIc(row: {
   id: string;
   name: string;
-  manufacturer?: string;
+  manufacturer?: string | null;
   data: object;
 }): IcFullRow {
   const db = getDb();
@@ -41,7 +41,7 @@ export function createIc(row: {
 
 export function updateIc(
   id: string,
-  updates: { name?: string; manufacturer?: string; data?: object }
+  updates: { name?: string; manufacturer?: string | null; data?: object }
 ): IcFullRow | null {
   const db = getDb();
   const existing = getIc(id);

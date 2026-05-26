@@ -29,7 +29,7 @@ export function getProfile(id: string): ProfileFullRow | null {
 export function createProfile(row: {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   data: object;
 }): ProfileFullRow {
   const db = getDb();
@@ -41,7 +41,7 @@ export function createProfile(row: {
 
 export function updateProfile(
   id: string,
-  updates: { name?: string; description?: string; data?: object }
+  updates: { name?: string; description?: string | null; data?: object }
 ): ProfileFullRow | null {
   const db = getDb();
   const existing = getProfile(id);
