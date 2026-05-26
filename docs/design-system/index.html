@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>dt-solver — design system</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Geist', 'system-ui', 'sans-serif'],
+          mono: ['Geist Mono', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root {
+    --bg-0: #0a0e14;
+    --bg-1: #0d1117;
+    --bg-2: #11161e;
+    --line: rgba(30, 41, 59, 0.8);
+  }
+  html, body {
+    margin: 0;
+    background: var(--bg-0);
+    font-family: 'Geist', system-ui, sans-serif;
+    color: #cbd5e1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .font-mono { font-family: 'Geist Mono', ui-monospace, monospace; }
+  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 4px; }
+  *::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.45); }
+
+  /* dotted grid backdrop for sample cards */
+  .grid-bg {
+    background-image:
+      radial-gradient(rgba(148,163,184,0.06) 1px, transparent 1px);
+    background-size: 12px 12px;
+    background-position: -1px -1px;
+  }
+
+  /* hairline divider used between sections */
+  .hairline { border-top: 1px solid rgba(30,41,59,0.7); }
+
+  /* caption label style used everywhere */
+  .cap {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #64748b;
+  }
+  .cap-sm { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #475569; }
+
+  /* small index tag used at the start of each section */
+  .ix { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 10px; color: #475569; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- TOP STRIP                                                    -->
+<!-- ============================================================ -->
+<header class="border-b" style="border-color: var(--line); background: #0d1117;">
+  <div class="max-w-[1280px] mx-auto px-8 py-6 flex items-end justify-between">
+    <div class="flex items-center gap-4">
+      <div class="relative w-9 h-9 flex items-center justify-center rounded-sm" style="background:#11161e; border:1px solid rgba(51,65,85,0.7);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 17h3v-8h3v8h3v-8h3v8h3" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="20" cy="6" r="2" fill="#22d3ee" opacity="0.85" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-baseline gap-3">
+          <h1 class="text-[20px] font-medium tracking-tight text-slate-100">dt-solver</h1>
+          <span class="text-[11px] font-mono text-slate-500">/ design system</span>
+        </div>
+        <div class="cap mt-1">v0.1.0 · tokens, components, patterns</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono uppercase tracking-widest">
+        <span class="w-1 h-1 rounded-full bg-emerald-400"></span> source · prototype
+      </span>
+      <span class="px-2 py-1 rounded-sm bg-[#0a0e14] border border-slate-800/80 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+        dark · dense · technical
+      </span>
+    </div>
+  </div>
+
+  <!-- navigator -->
+  <nav class="max-w-[1280px] mx-auto px-8 pb-3 flex items-center gap-5 text-[11px] font-mono text-slate-500">
+    <a href="#principles" class="hover:text-slate-200">00 principles</a>
+    <span class="text-slate-700">·</span>
+    <a href="#type" class="hover:text-slate-200">01 type</a>
+    <span class="text-slate-700">·</span>
+    <a href="#color" class="hover:text-slate-200">02 color</a>
+    <span class="text-slate-700">·</span>
+    <a href="#spacing" class="hover:text-slate-200">03 spacing</a>
+    <span class="text-slate-700">·</span>
+    <a href="#icons" class="hover:text-slate-200">04 icons</a>
+    <span class="text-slate-700">·</span>
+    <a href="#components" class="hover:text-slate-200">05 components</a>
+    <span class="text-slate-700">·</span>
+    <a href="#patterns" class="hover:text-slate-200">06 patterns</a>
+    <span class="text-slate-700">·</span>
+    <a href="#motion" class="hover:text-slate-200">07 motion &amp; copy</a>
+  </nav>
+</header>
+
+<main class="max-w-[1280px] mx-auto px-8 pb-24">
+
+<!-- ============================================================ -->
+<!-- 00 PRINCIPLES                                                -->
+<!-- ============================================================ -->
+<section id="principles" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">00</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Principles</h2>
+    <span class="cap ml-2">what dt-solver looks &amp; feels like</span>
+  </div>
+
+  <div class="grid grid-cols-4 gap-3">
+    <div class="p-5 rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">01 · density</div>
+      <div class="mt-3 text-[15px] text-slate-100 leading-snug">Every pixel earns its place.</div>
+      <p class="mt-2 text-[12.5px] text-slate-400 leading-relaxed">Engineers scan waveforms — we use 9.5–12.5px type and 2px radii so more signal fits in view without feeling cramped.</p>
+    </div>
+    <div class="p-5 rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">02 · mono for numbers</div>
+      <div class="mt-3 text-[15px] text-slate-100 leading-snug">Times, slack, signal IDs are tabular.</div>
+      <p class="mt-2 text-[12.5px] text-slate-400 leading-relaxed">Geist Mono on anything you'd compare row-to-row. Geist Sans for prose, labels, and titles.</p>
+    </div>
+    <div class="p-5 rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">03 · status is color</div>
+      <div class="mt-3 text-[15px] text-slate-100 leading-snug">Emerald passes. Rose fails. Amber waits.</div>
+      <p class="mt-2 text-[12.5px] text-slate-400 leading-relaxed">A 10% wash + 30% border + 300-weight text — the same recipe everywhere a result is shown.</p>
+    </div>
+    <div class="p-5 rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">04 · sharp not soft</div>
+      <div class="mt-3 text-[15px] text-slate-100 leading-snug">2px radii. Hairline borders. No drop shadows in chrome.</div>
+      <p class="mt-2 text-[12.5px] text-slate-400 leading-relaxed">Shadows reserved for modals only. Surfaces stack via background lightening, not elevation tricks.</p>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 01 TYPE                                                      -->
+<!-- ============================================================ -->
+<section id="type" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">01</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Type</h2>
+    <span class="cap ml-2">Geist · Geist Mono</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
+    <!-- specimens -->
+    <div class="rounded-sm border p-6" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">geist sans</div>
+      <div class="mt-4 text-[36px] tracking-tight text-slate-100">All constraints satisfied.</div>
+      <div class="mt-2 text-[15px] text-slate-300 leading-snug">Headline / titles · 500 weight, tight tracking.</div>
+      <div class="mt-6 text-[12.5px] text-slate-400 leading-relaxed max-w-[44ch]">
+        Body and inline labels. Used anywhere readability and prose flow matter — section titles, button text, descriptions.
+      </div>
+    </div>
+    <div class="rounded-sm border p-6" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap">geist mono</div>
+      <div class="mt-4 text-[36px] tracking-tight text-slate-100 font-mono">71.43 ns</div>
+      <div class="mt-2 text-[15px] text-slate-300 font-mono leading-snug">tSU · setup &nbsp; →&nbsp; Δ ≥ tSU,min</div>
+      <div class="mt-6 text-[12.5px] text-slate-400 font-mono leading-relaxed">
+        Times, slack values, signal names, hex literals, kbd hints, axis ticks, anything in a table column you'd compare top-to-bottom.
+      </div>
+    </div>
+  </div>
+
+  <!-- scale table -->
+  <div class="mt-3 rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="px-5 h-10 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <div class="text-[12.5px] text-slate-200 font-medium">Scale</div>
+      <div class="cap">token · use · sample</div>
+    </div>
+    <table class="w-full text-[12px]">
+      <thead>
+        <tr class="text-left text-slate-500 text-[10px] uppercase tracking-[0.14em] border-b" style="border-color:rgba(30,41,59,0.6);">
+          <th class="px-5 py-2 font-medium" style="width: 24%">Token</th>
+          <th class="px-5 py-2 font-medium" style="width: 12%">Size / Weight</th>
+          <th class="px-5 py-2 font-medium" style="width: 30%">Used for</th>
+          <th class="px-5 py-2 font-medium">Sample</th>
+        </tr>
+      </thead>
+      <tbody class="font-mono text-[11.5px] text-slate-400">
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">title.lg</td>
+          <td class="px-5 py-3">20 / 500</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Modal &amp; panel header titles</td>
+          <td class="px-5 py-3 font-sans"><span class="text-[20px] tracking-tight text-slate-100">New constraint</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">title.md</td>
+          <td class="px-5 py-3">15 / 500</td>
+          <td class="px-5 py-3 font-sans text-slate-400">App-bar product title</td>
+          <td class="px-5 py-3 font-sans"><span class="text-[15px] tracking-tight text-slate-100">dt-solver</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">body.md</td>
+          <td class="px-5 py-3">12.5 / 400</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Button labels, panel header items</td>
+          <td class="px-5 py-3 font-sans"><span class="text-[12.5px] text-slate-200">Constraint Inspector</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">body.sm</td>
+          <td class="px-5 py-3">11 / 400</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Type chip text, inline labels</td>
+          <td class="px-5 py-3 font-sans"><span class="text-[11px] text-slate-300">tSU · Setup</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">mono.value</td>
+          <td class="px-5 py-3">12 / 400</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Numeric cells, signal names</td>
+          <td class="px-5 py-3"><span class="text-[12px] text-slate-100">42.8 ns</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">mono.caption</td>
+          <td class="px-5 py-3">10.5 / 400</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Axis ticks, status pills</td>
+          <td class="px-5 py-3"><span class="text-[10.5px] text-slate-500">0 ns &nbsp; 25 ns &nbsp; 50 ns</span></td>
+        </tr>
+        <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+          <td class="px-5 py-3 text-slate-300">caption.upper</td>
+          <td class="px-5 py-3">10 / 500 · 0.18em</td>
+          <td class="px-5 py-3 font-sans text-slate-400">FormSection labels</td>
+          <td class="px-5 py-3"><span class="cap">anchor signal</span></td>
+        </tr>
+        <tr>
+          <td class="px-5 py-3 text-slate-300">caption.kbd</td>
+          <td class="px-5 py-3">9.5 / 400</td>
+          <td class="px-5 py-3 font-sans text-slate-400">Keyboard hints</td>
+          <td class="px-5 py-3"><span class="text-[9.5px] text-slate-600">[⌘ ⏎] add constraint</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 02 COLOR                                                     -->
+<!-- ============================================================ -->
+<section id="color" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">02</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Color</h2>
+    <span class="cap ml-2">surfaces · text · status · signals · constraint types</span>
+  </div>
+
+  <!-- surfaces -->
+  <div class="mb-3">
+    <div class="cap mb-3">02.1 · surfaces</div>
+    <div class="grid grid-cols-4 gap-3">
+      <!-- bg-0 -->
+      <div class="rounded-sm border overflow-hidden" style="border-color:rgba(30,41,59,0.7);">
+        <div class="h-24" style="background:#0a0e14;"></div>
+        <div class="px-3 py-2 border-t" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-baseline justify-between">
+            <span class="text-[12px] text-slate-200">bg-0 · canvas</span>
+            <span class="text-[10.5px] font-mono text-slate-500">#0a0e14</span>
+          </div>
+          <div class="cap-sm mt-1">outermost · waveform field</div>
+        </div>
+      </div>
+      <!-- bg-1 -->
+      <div class="rounded-sm border overflow-hidden" style="border-color:rgba(30,41,59,0.7);">
+        <div class="h-24" style="background:#0d1117;"></div>
+        <div class="px-3 py-2 border-t" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-baseline justify-between">
+            <span class="text-[12px] text-slate-200">bg-1 · panel</span>
+            <span class="text-[10.5px] font-mono text-slate-500">#0d1117</span>
+          </div>
+          <div class="cap-sm mt-1">sidebars · inspector · modal body</div>
+        </div>
+      </div>
+      <!-- bg-2 -->
+      <div class="rounded-sm border overflow-hidden" style="border-color:rgba(30,41,59,0.7);">
+        <div class="h-24" style="background:#11161e;"></div>
+        <div class="px-3 py-2 border-t" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-baseline justify-between">
+            <span class="text-[12px] text-slate-200">bg-2 · header</span>
+            <span class="text-[10.5px] font-mono text-slate-500">#11161e</span>
+          </div>
+          <div class="cap-sm mt-1">toolbars · modal header · logo tile</div>
+        </div>
+      </div>
+      <!-- line -->
+      <div class="rounded-sm border overflow-hidden" style="border-color:rgba(30,41,59,0.7);">
+        <div class="h-24 relative" style="background:#0d1117;">
+          <div class="absolute inset-x-4 top-1/2 h-px" style="background:rgba(30,41,59,0.8);"></div>
+          <div class="absolute inset-x-4 top-1/2 mt-3 h-px" style="background:rgba(30,41,59,0.5);"></div>
+          <div class="absolute inset-x-4 top-1/2 mt-6 h-px" style="background:rgba(30,41,59,0.3);"></div>
+        </div>
+        <div class="px-3 py-2 border-t" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-baseline justify-between">
+            <span class="text-[12px] text-slate-200">line · dividers</span>
+            <span class="text-[10.5px] font-mono text-slate-500">slate-800 /80 /60 /40</span>
+          </div>
+          <div class="cap-sm mt-1">hairlines · table rules · stripes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- text + signal -->
+  <div class="grid grid-cols-2 gap-3 mb-3">
+    <div>
+      <div class="cap mb-3">02.2 · text on dark</div>
+      <div class="rounded-sm border p-5 space-y-2.5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#f1f5f9;">slate-100 · primary headings &amp; values</span><span class="text-[10.5px] font-mono text-slate-500">#f1f5f9</span></div>
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#cbd5e1;">slate-300 · body, signal rows</span><span class="text-[10.5px] font-mono text-slate-500">#cbd5e1</span></div>
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#94a3b8;">slate-400 · secondary, required values</span><span class="text-[10.5px] font-mono text-slate-500">#94a3b8</span></div>
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#64748b;">slate-500 · captions, axis ticks</span><span class="text-[10.5px] font-mono text-slate-500">#64748b</span></div>
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#475569;">slate-600 · disabled, kbd hints</span><span class="text-[10.5px] font-mono text-slate-500">#475569</span></div>
+        <div class="flex items-center justify-between"><span class="text-[13.5px]" style="color:#334155;">slate-700 · placeholders</span><span class="text-[10.5px] font-mono text-slate-500">#334155</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="cap mb-3">02.3 · signal palette</div>
+      <div class="rounded-sm border p-3 grid grid-cols-5 gap-2" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <!-- clock -->
+        <div class="flex flex-col items-center gap-2 py-3">
+          <span class="w-5 h-5 rounded-full" style="background:#22d3ee; box-shadow:0 0 12px #22d3ee80"></span>
+          <div class="text-[10.5px] font-mono text-slate-200">PHI2</div>
+          <div class="cap-sm">clock · cyan</div>
+          <div class="text-[9.5px] font-mono text-slate-500">#22d3ee</div>
+        </div>
+        <div class="flex flex-col items-center gap-2 py-3">
+          <span class="w-5 h-5 rounded-full" style="background:#f59e0b; box-shadow:0 0 12px #f59e0b80"></span>
+          <div class="text-[10.5px] font-mono text-slate-200">ADDR</div>
+          <div class="cap-sm">bus · amber</div>
+          <div class="text-[9.5px] font-mono text-slate-500">#f59e0b</div>
+        </div>
+        <div class="flex flex-col items-center gap-2 py-3">
+          <span class="w-5 h-5 rounded-full" style="background:#a78bfa; box-shadow:0 0 12px #a78bfa80"></span>
+          <div class="text-[10.5px] font-mono text-slate-200">R/W̄</div>
+          <div class="cap-sm">line · violet</div>
+          <div class="text-[9.5px] font-mono text-slate-500">#a78bfa</div>
+        </div>
+        <div class="flex flex-col items-center gap-2 py-3">
+          <span class="w-5 h-5 rounded-full" style="background:#f472b6; box-shadow:0 0 12px #f472b680"></span>
+          <div class="text-[10.5px] font-mono text-slate-200">DATA</div>
+          <div class="cap-sm">bus · pink</div>
+          <div class="text-[9.5px] font-mono text-slate-500">#f472b6</div>
+        </div>
+        <div class="flex flex-col items-center gap-2 py-3">
+          <span class="w-5 h-5 rounded-full" style="background:#a3e635; box-shadow:0 0 12px #a3e63580"></span>
+          <div class="text-[10.5px] font-mono text-slate-200">CS̄</div>
+          <div class="cap-sm">line · lime</div>
+          <div class="text-[9.5px] font-mono text-slate-500">#a3e635</div>
+        </div>
+      </div>
+      <div class="mt-2 text-[11.5px] text-slate-500 leading-relaxed">Assign per-signal at creation; render as a glowing 8–10px dot wherever the signal appears. Glow recipe: <span class="font-mono text-slate-400">box-shadow: 0 0 6px {color}80</span>.</div>
+    </div>
+  </div>
+
+  <!-- status -->
+  <div class="mb-3">
+    <div class="cap mb-3">02.4 · solver status</div>
+    <div class="grid grid-cols-3 gap-3">
+      <!-- pass -->
+      <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono uppercase tracking-widest">
+            <span class="w-1 h-1 rounded-full bg-emerald-400"></span> live · pass
+          </span>
+          <span class="text-[10.5px] font-mono text-emerald-400">+18.4 ns</span>
+        </div>
+        <div class="cap mt-4">emerald</div>
+        <div class="mt-2 grid grid-cols-3 gap-1 text-[10px] font-mono">
+          <div class="px-2 py-1 rounded-sm bg-emerald-500/10 text-emerald-300">/10 fill</div>
+          <div class="px-2 py-1 rounded-sm border border-emerald-500/30 text-emerald-300">/30 border</div>
+          <div class="px-2 py-1 rounded-sm text-emerald-300">300 text</div>
+        </div>
+        <div class="mt-3 text-[11.5px] text-slate-400 leading-relaxed">Constraint satisfied · positive slack. Status pills, calc cells, footer indicator.</div>
+      </div>
+      <!-- fail -->
+      <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[10px] font-mono uppercase tracking-widest">
+            <span class="w-1 h-1 rounded-full bg-rose-400"></span> live · fail
+          </span>
+          <span class="text-[10.5px] font-mono text-rose-400">−4.2 ns</span>
+        </div>
+        <div class="cap mt-4">rose</div>
+        <div class="mt-2 grid grid-cols-3 gap-1 text-[10px] font-mono">
+          <div class="px-2 py-1 rounded-sm bg-rose-500/10 text-rose-300">/10 fill</div>
+          <div class="px-2 py-1 rounded-sm border border-rose-500/30 text-rose-300">/30 border</div>
+          <div class="px-2 py-1 rounded-sm text-rose-300">300 text</div>
+        </div>
+        <div class="mt-3 text-[11.5px] text-slate-400 leading-relaxed">Constraint violated · negative slack. Row tinted <span class="font-mono">bg-rose-950/30</span>; calc + slack cells go bold rose.</div>
+      </div>
+      <!-- unresolved -->
+      <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono uppercase tracking-widest">
+            <span class="w-1 h-1 rounded-full bg-amber-400"></span> live · unresolved
+          </span>
+          <span class="text-[10.5px] font-mono text-amber-400">—</span>
+        </div>
+        <div class="cap mt-4">amber</div>
+        <div class="mt-2 grid grid-cols-3 gap-1 text-[10px] font-mono">
+          <div class="px-2 py-1 rounded-sm bg-amber-500/10 text-amber-300">/10 fill</div>
+          <div class="px-2 py-1 rounded-sm border border-amber-500/30 text-amber-300">/30 border</div>
+          <div class="px-2 py-1 rounded-sm text-amber-300">300 text</div>
+        </div>
+        <div class="mt-3 text-[11.5px] text-slate-400 leading-relaxed">No anchor/target events in window — show "try a different edge" hint. Slack and calc render as em-dash.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- constraint type swatches -->
+  <div>
+    <div class="cap mb-3">02.5 · constraint type taxonomy <span class="text-slate-600">SWATCH_BG</span></div>
+    <div class="rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="grid grid-cols-5 divide-x" style="--tw-divide-opacity:1; border-color:rgba(30,41,59,0.5);">
+        <!-- setup -->
+        <div class="p-5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-sky-500/10 border border-sky-500/30 text-sky-300 font-mono text-[10.5px]">tSU</span>
+            <div>
+              <div class="text-[12.5px] text-slate-100">SETUP</div>
+              <div class="cap-sm">sky · 500</div>
+            </div>
+          </div>
+          <div class="mt-4 font-mono text-[11.5px] text-slate-400">Δ ≥ tSU,min</div>
+          <div class="mt-1 text-[10.5px] text-slate-500 leading-snug">Data must arrive before the active edge.</div>
+        </div>
+        <!-- hold -->
+        <div class="p-5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-violet-500/10 border border-violet-500/30 text-violet-300 font-mono text-[10.5px]">tH</span>
+            <div>
+              <div class="text-[12.5px] text-slate-100">HOLD</div>
+              <div class="cap-sm">violet · 500</div>
+            </div>
+          </div>
+          <div class="mt-4 font-mono text-[11.5px] text-slate-400">Δ ≥ tH,min</div>
+          <div class="mt-1 text-[10.5px] text-slate-500 leading-snug">Data stays valid after the active edge.</div>
+        </div>
+        <!-- prop_delay -->
+        <div class="p-5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[10.5px]">tPD</span>
+            <div>
+              <div class="text-[12.5px] text-slate-100">PROP_DELAY</div>
+              <div class="cap-sm">amber · 500</div>
+            </div>
+          </div>
+          <div class="mt-4 font-mono text-[11.5px] text-slate-400">Δ ≤ tPD,max</div>
+          <div class="mt-1 text-[10.5px] text-slate-500 leading-snug">Output must settle within budget.</div>
+        </div>
+        <!-- min_pulse -->
+        <div class="p-5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[10.5px]">tW</span>
+            <div>
+              <div class="text-[12.5px] text-slate-100">MIN_PULSE</div>
+              <div class="cap-sm">emerald · 500</div>
+            </div>
+          </div>
+          <div class="mt-4 font-mono text-[11.5px] text-slate-400">pw ≥ tW,min</div>
+          <div class="mt-1 text-[10.5px] text-slate-500 leading-snug">Pulse width on one signal.</div>
+        </div>
+        <!-- cycle_time -->
+        <div class="p-5">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-slate-500/10 border border-slate-500/40 text-slate-300 font-mono text-[10.5px]">tC</span>
+            <div>
+              <div class="text-[12.5px] text-slate-100">CYCLE_TIME</div>
+              <div class="cap-sm">slate · 500</div>
+            </div>
+          </div>
+          <div class="mt-4 font-mono text-[11.5px] text-slate-400">T ≥ tC,min</div>
+          <div class="mt-1 text-[10.5px] text-slate-500 leading-snug">Period between equivalent edges.</div>
+        </div>
+      </div>
+      <div class="px-5 py-2.5 border-t text-[10.5px] font-mono text-slate-500" style="border-color:rgba(30,41,59,0.5); background:#0a0e14;">
+        recipe · <span class="text-slate-400">bg-{hue}-500/10</span> &nbsp;·&nbsp; <span class="text-slate-400">border-{hue}-500/30</span> &nbsp;·&nbsp; <span class="text-slate-400">text-{hue}-300</span> &nbsp;·&nbsp; symbol in mono 10–10.5px
+      </div>
+    </div>
+  </div>
+
+  <!-- role accents -->
+  <div class="mt-3">
+    <div class="cap mb-3">02.6 · role accents · anchor / target</div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between">
+          <div class="text-[12.5px] text-slate-200">anchor</div>
+          <span class="text-[10.5px] font-mono" style="color:#fde047;">#fde047</span>
+        </div>
+        <div class="mt-3 h-10 flex items-center gap-3 px-3 rounded-sm" style="background:#0a0e14; border:1px solid rgba(30,41,59,0.7);">
+          <span class="text-[12px] font-mono" style="color:#fde047;">↓</span>
+          <span class="text-[11px] text-slate-400 font-mono">falling edges of PHI2</span>
+        </div>
+        <div class="mt-2 text-[10.5px] text-slate-500">Yellow row wash 2%, yellow needles + edge arrow in builder.</div>
+      </div>
+      <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between">
+          <div class="text-[12.5px] text-slate-200">target</div>
+          <span class="text-[10.5px] font-mono" style="color:#22d3ee;">#22d3ee</span>
+        </div>
+        <div class="mt-3 h-10 flex items-center gap-3 px-3 rounded-sm" style="background:#0a0e14; border:1px solid rgba(30,41,59,0.7);">
+          <span class="text-[12px] font-mono" style="color:#22d3ee;">⤳</span>
+          <span class="text-[11px] text-slate-400 font-mono">transitions on ADDR[15:0]</span>
+        </div>
+        <div class="mt-2 text-[10.5px] text-slate-500">Cyan row wash 2%, cyan needles + edge arrow in builder.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 03 SPACING + RADII + STROKES                                 -->
+<!-- ============================================================ -->
+<section id="spacing" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">03</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Spacing, radii &amp; strokes</h2>
+    <span class="cap ml-2">how tight is tight</span>
+  </div>
+
+  <div class="grid grid-cols-3 gap-3">
+    <!-- spacing scale -->
+    <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap mb-4">spacing scale</div>
+      <div class="space-y-3 font-mono text-[11px] text-slate-400">
+        <div class="flex items-center gap-3"><span class="block" style="width:2px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">2</span><span>hairline · inner gap</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:6px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">6</span><span>chip grid, type-chip gap</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:8px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">8</span><span>row inner padding</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:12px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">12</span><span>panel/table cell pad</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:16px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">16</span><span>form-section vertical</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:20px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">20</span><span>modal padding-x</span></div>
+        <div class="flex items-center gap-3"><span class="block" style="width:28px; height:14px; background:#22d3ee"></span><span class="w-8 text-slate-300">28</span><span>preview SVG pad</span></div>
+      </div>
+    </div>
+
+    <!-- radii -->
+    <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap mb-4">radii</div>
+      <div class="space-y-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-slate-700/60"></div>
+          <div>
+            <div class="text-[12.5px] text-slate-200 font-mono">0</div>
+            <div class="text-[10.5px] text-slate-500">SVG strokes, dashed verticals, axis</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-sm bg-slate-700/60"></div>
+          <div>
+            <div class="text-[12.5px] text-slate-200 font-mono">2 · rounded-sm</div>
+            <div class="text-[10.5px] text-slate-500">All cards, buttons, inputs, chips</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-slate-700/60"></div>
+          <div>
+            <div class="text-[12.5px] text-slate-200 font-mono">∞ · rounded-full</div>
+            <div class="text-[10.5px] text-slate-500">Signal dots, status indicator dots</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- elevation & strokes -->
+    <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap mb-4">elevation &amp; strokes</div>
+      <div class="space-y-3">
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">hairline</span>
+          <span class="font-mono text-slate-500">1px slate-800/80</span>
+        </div>
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">stripe</span>
+          <span class="font-mono text-slate-500">slate-900/30 alt rows</span>
+        </div>
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">hover</span>
+          <span class="font-mono text-slate-500">slate-800/40 bg</span>
+        </div>
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">selected</span>
+          <span class="font-mono text-slate-500">slate-800/60 + border-slate-700/80</span>
+        </div>
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">modal shadow</span>
+          <span class="font-mono text-slate-500">0 30px 90px -20px rgba(0,0,0,.8)</span>
+        </div>
+        <div class="flex items-baseline justify-between text-[11px]">
+          <span class="text-slate-300">backdrop</span>
+          <span class="font-mono text-slate-500">rgba(2,6,12,.66) · blur 4px</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- frame heights -->
+  <div class="mt-3 rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="cap mb-4">canonical chrome heights</div>
+    <div class="grid grid-cols-6 gap-3">
+      <div>
+        <div class="text-[11px] text-slate-200">app toolbar</div>
+        <div class="font-mono text-[10.5px] text-slate-500">h-10 · 40px</div>
+      </div>
+      <div>
+        <div class="text-[11px] text-slate-200">modal header / footer</div>
+        <div class="font-mono text-[10.5px] text-slate-500">h-14 · 56px</div>
+      </div>
+      <div>
+        <div class="text-[11px] text-slate-200">inspector row</div>
+        <div class="font-mono text-[10.5px] text-slate-500">py-2.5 · ~40px</div>
+      </div>
+      <div>
+        <div class="text-[11px] text-slate-200">waveform row</div>
+        <div class="font-mono text-[10.5px] text-slate-500">70px (PV.rowH)</div>
+      </div>
+      <div>
+        <div class="text-[11px] text-slate-200">status footer</div>
+        <div class="font-mono text-[10.5px] text-slate-500">h-7 · 28px</div>
+      </div>
+      <div>
+        <div class="text-[11px] text-slate-200">sidebar width</div>
+        <div class="font-mono text-[10.5px] text-slate-500">300px</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 04 ICONS                                                     -->
+<!-- ============================================================ -->
+<section id="icons" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">04</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Iconography</h2>
+    <span class="cap ml-2">24×24 viewbox · 1.75 stroke · round caps</span>
+  </div>
+
+  <div class="rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="grid grid-cols-6 divide-x divide-y" style="border-color:rgba(30,41,59,0.5);">
+      <!-- plus -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">plus</div>
+        <div class="cap-sm">add</div>
+      </div>
+      <!-- chevron -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">chevron</div>
+        <div class="cap-sm">collapse</div>
+      </div>
+      <!-- square-wave -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16h3v-8h4v8h4v-8h4v8h3" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">square-wave</div>
+        <div class="cap-sm">clock signal</div>
+      </div>
+      <!-- pulse -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-6 4 12 2-6h8" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">pulse</div>
+        <div class="cap-sm">data line</div>
+      </div>
+      <!-- bus -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3l2 -2h8l2 2h3" /><path d="M3 16h3l2 2h8l2 -2h3" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">bus</div>
+        <div class="cap-sm">multi-bit</div>
+      </div>
+      <!-- trash -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">trash</div>
+        <div class="cap-sm">remove</div>
+      </div>
+      <!-- settings -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .4 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.4 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .4-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.4-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.4H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.4 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">settings</div>
+        <div class="cap-sm">profile/options</div>
+      </div>
+      <!-- diamond -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l10 10-10 10L2 12z" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">diamond</div>
+        <div class="cap-sm">profile · chip</div>
+      </div>
+      <!-- zoom-in -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3M8 11h6M11 8v6" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">zoom-in</div>
+        <div class="cap-sm">⌘+</div>
+      </div>
+      <!-- zoom-out -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3M8 11h6" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">zoom-out</div>
+        <div class="cap-sm">⌘−</div>
+      </div>
+      <!-- maximize / fit -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5" /></svg>
+        <div class="text-[11px] text-slate-200 font-mono">maximize</div>
+        <div class="cap-sm">F · fit view</div>
+      </div>
+      <!-- arrow glyphs -->
+      <div class="p-5 flex flex-col items-center gap-2">
+        <div class="font-mono text-[18px] text-slate-200 flex gap-2">
+          <span style="color:#fde047">↑</span>
+          <span style="color:#fde047">↓</span>
+          <span style="color:#22d3ee">⤳</span>
+        </div>
+        <div class="text-[11px] text-slate-200 font-mono">edge glyphs</div>
+        <div class="cap-sm">rising · falling · transition</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 05 COMPONENTS                                                -->
+<!-- ============================================================ -->
+<section id="components" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">05</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Components</h2>
+    <span class="cap ml-2">live samples · copy &amp; reuse</span>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Buttons</span>
+      <span class="cap">primary · secondary · ghost · tool</span>
+    </div>
+    <div class="p-6 grid-bg flex flex-wrap items-center gap-4">
+      <!-- primary -->
+      <button class="px-4 py-1.5 rounded-sm bg-slate-100 hover:bg-white text-slate-900 text-[12.5px] font-medium border border-slate-100">
+        Add constraint
+      </button>
+      <!-- primary disabled -->
+      <button disabled class="px-4 py-1.5 rounded-sm bg-slate-800/60 border border-slate-800/80 text-slate-500 text-[12.5px] font-medium cursor-not-allowed">
+        Add constraint
+      </button>
+      <!-- secondary -->
+      <button class="flex items-center gap-1 px-2 py-1 rounded-sm bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700/60 text-slate-200 text-[11px]">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        New constraint
+      </button>
+      <!-- ghost text -->
+      <button class="px-2 py-1 text-[11.5px] text-slate-400 hover:text-slate-100">Cancel</button>
+      <!-- tool btn -->
+      <button class="flex items-center gap-1 px-2 py-1 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 rounded-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/></svg>
+        <span class="text-[11px]">Zoom In</span>
+      </button>
+      <!-- type-of segmented button -->
+      <div class="flex items-center gap-1.5">
+        <button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-sm bg-[#0a0e14] hover:bg-slate-800/60 border border-slate-800/60 text-slate-400 hover:text-slate-200 text-[10.5px]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16h3v-8h4v8h4v-8h4v8h3"/></svg>
+          Clock
+        </button>
+        <button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-sm bg-[#0a0e14] hover:bg-slate-800/60 border border-slate-800/60 text-slate-400 hover:text-slate-200 text-[10.5px]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h3l2 -2h8l2 2h3" /><path d="M3 16h3l2 2h8l2 -2h3" /></svg>
+          Bus
+        </button>
+        <button class="flex items-center justify-center gap-1 py-1.5 px-2 rounded-sm bg-[#0a0e14] hover:bg-slate-800/60 border border-slate-800/60 text-slate-400 hover:text-slate-200 text-[10.5px]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-6 4 12 2-6h8"/></svg>
+          Line
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPE CHIPS (5-up grid as used in builder) -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Type chips</span>
+      <span class="cap">constraint-builder type picker · 5-up grid · 2px radius</span>
+    </div>
+    <div class="p-6 grid-bg">
+      <div class="grid grid-cols-5 gap-1.5">
+        <!-- active SETUP -->
+        <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-sky-500/10 border border-current text-sky-300 font-medium text-[11px] whitespace-nowrap">
+          <span class="font-mono text-[10px]">tSU</span>
+          <span class="text-current/80">·</span>
+          <span>Setup</span>
+        </button>
+        <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 hover:text-slate-100 hover:border-slate-700 text-[11px] whitespace-nowrap">
+          <span class="font-mono text-[10px]">tH</span>
+          <span>·</span>
+          <span>Hold</span>
+        </button>
+        <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 hover:text-slate-100 hover:border-slate-700 text-[11px] whitespace-nowrap">
+          <span class="font-mono text-[10px]">tPD</span>
+          <span>·</span>
+          <span>Prop</span>
+        </button>
+        <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 hover:text-slate-100 hover:border-slate-700 text-[11px] whitespace-nowrap">
+          <span class="font-mono text-[10px]">tW</span>
+          <span>·</span>
+          <span>Pulse</span>
+        </button>
+        <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 hover:text-slate-100 hover:border-slate-700 text-[11px] whitespace-nowrap">
+          <span class="font-mono text-[10px]">tC</span>
+          <span>·</span>
+          <span>Cycle</span>
+        </button>
+      </div>
+      <div class="mt-3 text-[10.5px] font-mono text-slate-500">format · <span class="text-slate-300">tSU · Setup</span> &nbsp;·&nbsp; symbol mono 10px, middot, label body 11px</div>
+    </div>
+  </div>
+
+  <!-- STATUS BADGE + STATUS PILL + INLINE TYPE CHIP -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Badges &amp; chips</span>
+      <span class="cap">status badge · live pill · type chip (inline)</span>
+    </div>
+    <div class="p-6 grid-bg grid grid-cols-3 gap-6">
+      <!-- status badges -->
+      <div>
+        <div class="cap mb-3">status badge · 16×16</div>
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          </span>
+          <span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-rose-500/15 border border-rose-500/40 text-rose-400">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </span>
+          <span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono">?</span>
+        </div>
+      </div>
+
+      <!-- pills -->
+      <div>
+        <div class="cap mb-3">live status pill</div>
+        <div class="flex flex-col gap-1.5">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono uppercase tracking-widest w-fit">
+            <span class="w-1 h-1 rounded-full bg-emerald-400"></span> live · pass
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[10px] font-mono uppercase tracking-widest w-fit">
+            <span class="w-1 h-1 rounded-full bg-rose-400"></span> live · fail
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-mono uppercase tracking-widest w-fit">
+            <span class="w-1 h-1 rounded-full bg-amber-400"></span> live · unresolved
+          </span>
+        </div>
+      </div>
+
+      <!-- inline type chip (compact) -->
+      <div>
+        <div class="cap mb-3">inline type chip · table</div>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-sky-500/10 text-sky-300 border-sky-500/20">setup</span>
+          <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-violet-500/10 text-violet-300 border-violet-500/20">hold</span>
+          <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-amber-500/10 text-amber-300 border-amber-500/20">prop</span>
+          <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-emerald-500/10 text-emerald-300 border-emerald-500/20">pulse</span>
+          <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-slate-700/30 text-slate-300 border-slate-600/30">cycle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Inputs</span>
+      <span class="cap">text · bound · signal select · edge toggle</span>
+    </div>
+    <div class="p-6 grid-bg grid grid-cols-2 gap-6">
+      <!-- text input -->
+      <div>
+        <div class="flex items-baseline gap-2 mb-2">
+          <span class="cap">name</span>
+          <span class="text-[9.5px] font-mono text-slate-600 tracking-tight">[N] focus</span>
+        </div>
+        <div class="flex items-stretch rounded-sm bg-[#0a0e14] border border-slate-800/80">
+          <input value="tADS — Address Setup" class="flex-1 bg-transparent px-2.5 py-2 text-[13px] font-mono text-slate-100 outline-none" />
+          <button class="px-2 text-[10px] font-mono text-slate-500 hover:text-slate-200 border-l border-slate-800/80">reset</button>
+        </div>
+      </div>
+
+      <!-- bound input with prefix + suffix -->
+      <div>
+        <div class="cap mb-2">bound · prefix + suffix</div>
+        <div class="grid grid-cols-2 gap-1.5">
+          <div class="flex items-stretch rounded-sm bg-[#0a0e14] border border-slate-800/80">
+            <span class="px-2 flex items-center text-[10px] font-mono text-slate-500 uppercase border-r border-slate-800/80">tSU.min</span>
+            <input value="30" class="flex-1 bg-transparent px-2 py-2 text-[13px] font-mono text-slate-100 outline-none min-w-0" />
+            <span class="px-2 flex items-center text-[10.5px] font-mono text-slate-500 border-l border-slate-800/80">ns</span>
+          </div>
+          <div class="flex items-stretch rounded-sm bg-[#0a0e14] border border-slate-800/80 opacity-40">
+            <span class="px-2 flex items-center text-[10px] font-mono text-slate-500 uppercase border-r border-slate-800/80">tSU.max</span>
+            <input value="—" disabled class="flex-1 bg-transparent px-2 py-2 text-[13px] font-mono text-slate-100 outline-none min-w-0" />
+            <span class="px-2 flex items-center text-[10.5px] font-mono text-slate-500 border-l border-slate-800/80">ns</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- signal select -->
+      <div>
+        <div class="cap mb-2">signal reference</div>
+        <div class="flex items-center gap-2 px-2.5 py-2 rounded-sm bg-[#0a0e14] border border-slate-800/80">
+          <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#22d3ee; box-shadow:0 0 6px #22d3ee80"></span>
+          <span class="flex-1 text-[12.5px] font-mono text-slate-100">PHI2</span>
+          <span class="text-[9.5px] font-mono text-slate-500">14M</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg)"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+
+      <!-- edge toggle -->
+      <div>
+        <div class="cap mb-2">edge direction · anchor accent</div>
+        <div class="flex items-stretch rounded-sm overflow-hidden border border-slate-800/80 bg-[#0a0e14]" style="width:200px;">
+          <button class="flex-1 px-1 py-2 font-mono text-slate-500 hover:text-slate-300 hover:bg-slate-800/40 text-[12px]">↑</button>
+          <button class="flex-1 px-1 py-2 font-mono bg-slate-800/80 text-[12px]" style="color:#fde047;">↓</button>
+          <button class="flex-1 px-1 py-2 font-mono text-slate-500 hover:text-slate-300 hover:bg-slate-800/40 text-[12px]">⤳</button>
+        </div>
+        <div class="mt-2 text-[10.5px] font-mono text-slate-500 italic">&gt; falling edges of PHI2 @ 14 MHz</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNAL ROWS (sidebar) -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Signal row</span>
+      <span class="cap">sidebar · default · hover · selected</span>
+    </div>
+    <div class="p-6 grid-bg">
+      <div class="space-y-1 max-w-[300px]">
+        <div class="mx-2 my-0.5 px-2.5 py-2 rounded-sm flex items-center gap-2.5 border border-transparent">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:#22d3ee; box-shadow:0 0 6px #22d3ee80"></span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16h3v-8h4v8h4v-8h4v8h3"/></svg>
+          <div class="flex-1 min-w-0">
+            <div class="text-[12.5px] font-mono text-slate-200 truncate leading-tight">PHI2</div>
+            <div class="text-[10px] text-slate-500 truncate leading-tight mt-0.5">System clock — 14 MHz</div>
+          </div>
+          <span class="text-[9.5px] font-mono text-slate-600 uppercase tracking-wider">14M</span>
+        </div>
+        <div class="mx-2 my-0.5 px-2.5 py-2 rounded-sm flex items-center gap-2.5 border bg-[#0a0e14] border-slate-800/80">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b80"></span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-6 4 12 2-6h8"/></svg>
+          <div class="flex-1 min-w-0">
+            <div class="text-[12.5px] font-mono text-slate-200 truncate leading-tight">ADDR[15:0]</div>
+            <div class="text-[10px] text-slate-500 truncate leading-tight mt-0.5">CPU address bus</div>
+          </div>
+          <span class="text-[9.5px] font-mono text-slate-600 uppercase tracking-wider">[15:0]</span>
+        </div>
+        <div class="mx-2 my-0.5 px-2.5 py-2 rounded-sm flex items-center gap-2.5 border bg-slate-800/60 border-slate-700/80">
+          <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:#a78bfa; box-shadow:0 0 6px #a78bfa80"></span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l2-6 4 12 2-6h8"/></svg>
+          <div class="flex-1 min-w-0">
+            <div class="text-[12.5px] font-mono text-slate-200 truncate leading-tight">R/W̄</div>
+            <div class="text-[10px] text-slate-500 truncate leading-tight mt-0.5">Read (high) / write (low)</div>
+          </div>
+          <button class="text-slate-600 hover:text-rose-400 p-0.5" title="Remove signal">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSTRAINT ROW (table) -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Constraint table row</span>
+      <span class="cap">inspector · pass · fail · stripe</span>
+    </div>
+    <div class="grid-bg">
+      <table class="w-full text-[12px]">
+        <thead>
+          <tr class="text-slate-500 text-[10px] uppercase tracking-[0.12em] border-b" style="border-color:rgba(30,41,59,0.6);">
+            <th class="px-3 py-2 text-left font-medium" style="width:32px"></th>
+            <th class="px-3 py-2 text-left font-medium">Constraint</th>
+            <th class="px-3 py-2 text-left font-medium">Anchor</th>
+            <th class="px-3 py-2 text-left font-medium">Target</th>
+            <th class="px-3 py-2 text-right font-medium">Required</th>
+            <th class="px-3 py-2 text-right font-medium">Calculated</th>
+            <th class="px-3 py-2 text-right font-medium">Slack</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- pass -->
+          <tr class="border-b" style="border-color:rgba(30,41,59,0.4);">
+            <td class="px-3 py-2.5"><span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span></td>
+            <td class="px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-100 text-[12.5px]">tADS — Address Setup</span>
+                <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-sky-500/10 text-sky-300 border-sky-500/20">setup</span>
+              </div>
+            </td>
+            <td class="px-3 py-2.5">
+              <span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#22d3ee"></span>
+                PHI2 falling edge
+              </span>
+            </td>
+            <td class="px-3 py-2.5">
+              <span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:#f59e0b"></span>
+                ADDR[15:0] valid
+              </span>
+            </td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11.5px] text-slate-400">≥ 30 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[12px] text-slate-100">48.4 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11px] text-emerald-400">+18.4</td>
+          </tr>
+          <!-- stripe pass -->
+          <tr class="border-b bg-slate-900/30" style="border-color:rgba(30,41,59,0.4);">
+            <td class="px-3 py-2.5"><span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span></td>
+            <td class="px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-100 text-[12.5px]">tAH — Address Hold</span>
+                <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-violet-500/10 text-violet-300 border-violet-500/20">hold</span>
+              </div>
+            </td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#22d3ee"></span>PHI2 falling edge</span></td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#f59e0b"></span>ADDR[15:0] valid</span></td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11.5px] text-slate-400">≥ 10 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[12px] text-slate-100">14.6 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11px] text-emerald-400">+4.6</td>
+          </tr>
+          <!-- fail -->
+          <tr class="border-b bg-rose-950/30" style="border-color:rgba(30,41,59,0.4);">
+            <td class="px-3 py-2.5"><span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-rose-500/15 border border-rose-500/40 text-rose-400"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td>
+            <td class="px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-100 text-[12.5px]">tDSR — Data Read Setup</span>
+                <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-sky-500/10 text-sky-300 border-sky-500/20">setup</span>
+              </div>
+            </td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#22d3ee"></span>PHI2 falling edge</span></td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#f472b6"></span>DATA[7:0] valid</span></td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11.5px] text-slate-400">≥ 10 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[12px] text-rose-400 font-semibold">5.8 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11px] text-rose-400">−4.2</td>
+          </tr>
+          <!-- unresolved -->
+          <tr style="background:#0d1117;">
+            <td class="px-3 py-2.5"><span class="inline-flex items-center justify-center w-4 h-4 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono">?</span></td>
+            <td class="px-3 py-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-100 text-[12.5px]">tCS — Chip Select</span>
+                <span class="text-[9.5px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-mono border bg-sky-500/10 text-sky-300 border-sky-500/20">setup</span>
+              </div>
+            </td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#22d3ee"></span>PHI2 falling edge</span></td>
+            <td class="px-3 py-2.5"><span class="flex items-center gap-1.5 text-slate-300 font-mono text-[11.5px]"><span class="w-1.5 h-1.5 rounded-full" style="background:#a3e635"></span>CS̄ falling edge</span></td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11.5px] text-slate-400">≥ 25 ns</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[12px] text-slate-600">—</td>
+            <td class="px-3 py-2.5 text-right font-mono text-[11px] text-slate-600">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WAVEFORM TRACE PRIMITIVES -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Waveform primitives</span>
+      <span class="cap">trace shapes · annotation band · event needles</span>
+    </div>
+    <div class="p-6 grid-bg">
+      <svg viewBox="0 0 920 260" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;">
+        <!-- header strip ticks -->
+        <line x1="28" y1="32" x2="892" y2="32" stroke="rgba(30,41,59,0.9)" stroke-width="1"/>
+        <g font-family="Geist Mono" font-size="10.5" fill="#64748b">
+          <text x="28" y="20">0 ns</text>
+          <text x="200" y="20">25 ns</text>
+          <text x="372" y="20">50 ns</text>
+          <text x="544" y="20">75 ns</text>
+          <text x="716" y="20">100 ns</text>
+          <text x="858" y="20">125 ns</text>
+        </g>
+        <g stroke="rgba(30,41,59,0.7)" stroke-width="1">
+          <line x1="200" y1="28" x2="200" y2="36"/>
+          <line x1="372" y1="28" x2="372" y2="36"/>
+          <line x1="544" y1="28" x2="544" y2="36"/>
+          <line x1="716" y1="28" x2="716" y2="36"/>
+        </g>
+
+        <!-- annotation band -->
+        <rect x="372" y="52" width="172" height="180" fill="rgba(248,113,113,0.14)"/>
+        <line x1="372" y1="44" x2="372" y2="240" stroke="#f87171" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <line x1="544" y1="44" x2="544" y2="240" stroke="#f87171" stroke-width="1.2" stroke-dasharray="3 2"/>
+
+        <!-- row 1: clock waveform -->
+        <text x="28" y="84" font-family="Geist Mono" font-size="10.5" fill="#22d3ee">PHI2</text>
+        <text x="62" y="84" font-family="Geist Mono" font-size="9.5" fill="rgba(125,159,195,0.7)">· anchor</text>
+        <rect x="28" y="60" width="864" height="70" fill="rgba(253,224,71,0.02)"/>
+        <path d="M 28 110 L 100 110 L 100 90 L 200 90 L 200 110 L 286 110 L 286 90 L 372 90 L 372 110 L 458 110 L 458 90 L 544 90 L 544 110 L 630 110 L 630 90 L 716 90 L 716 110 L 802 110 L 802 90 L 892 90"
+              fill="none" stroke="#22d3ee" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- anchor needle -->
+        <circle cx="372" cy="100" r="3" fill="#0a0e14" stroke="#fde047" stroke-width="1.5" opacity="0.85"/>
+
+        <!-- row 2: data bus -->
+        <text x="28" y="154" font-family="Geist Mono" font-size="10.5" fill="#f472b6">DATA[7:0]</text>
+        <text x="84" y="154" font-family="Geist Mono" font-size="9.5" fill="rgba(125,159,195,0.7)">· target</text>
+        <rect x="28" y="130" width="864" height="70" fill="rgba(34,211,238,0.02)"/>
+        <!-- bus shape: hi-z then 0xA9 then hi-z then 0x55 -->
+        <path d="M 28 170 L 80 170 L 100 160 L 350 160 L 370 170 L 410 170 L 430 160 L 700 160 L 720 170 L 892 170
+                 M 28 170 L 80 170 L 100 180 L 350 180 L 370 170 L 410 170 L 430 180 L 700 180 L 720 170 L 892 170"
+              fill="none" stroke="#f472b6" stroke-width="1.6" stroke-linejoin="round"/>
+        <text x="220" y="173" font-family="Geist Mono" font-size="10" fill="#f472b6">0xA9</text>
+        <text x="560" y="173" font-family="Geist Mono" font-size="10" fill="#f472b6">0x55</text>
+        <!-- target needle -->
+        <circle cx="544" cy="170" r="3" fill="#0a0e14" stroke="#22d3ee" stroke-width="1.5" opacity="0.85"/>
+
+        <!-- delta annotation centerpiece -->
+        <text x="372" y="226" font-family="Geist Mono" font-size="9.5" fill="rgba(180,200,220,0.7)" text-anchor="middle">anchor · 50.0 ns</text>
+        <text x="544" y="226" font-family="Geist Mono" font-size="9.5" fill="rgba(180,200,220,0.7)" text-anchor="middle">target · 55.8 ns</text>
+
+        <line x1="378" y1="140" x2="538" y2="140" stroke="#f87171" stroke-width="1.5"
+              marker-end="url(#ar)" marker-start="url(#al)"/>
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,0 L6,5 L0,10" fill="none" stroke="#f87171" stroke-width="1.5"/>
+          </marker>
+          <marker id="al" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M6,0 L0,5 L6,10" fill="none" stroke="#f87171" stroke-width="1.5"/>
+          </marker>
+        </defs>
+
+        <!-- center pill -->
+        <rect x="386" y="120" width="144" height="32" rx="2" fill="#0a0e14" stroke="#f87171" stroke-opacity="0.7"/>
+        <text x="458" y="135" font-family="Geist Mono" font-size="11.5" font-weight="600" fill="#f87171" text-anchor="middle">Δ 5.8 ns</text>
+        <text x="458" y="147" font-family="Geist Mono" font-size="9.5" fill="rgba(203,213,225,0.6)" text-anchor="middle">req ≥ 10 · slack −4.2</text>
+      </svg>
+
+      <div class="mt-5 grid grid-cols-4 gap-3 text-[11px]">
+        <div class="border-l-2 pl-3" style="border-color:#34d399;">
+          <div class="text-slate-200">annotation band · PASS</div>
+          <div class="font-mono text-slate-500 text-[10.5px]">fill rgba(52,211,153,0.12)</div>
+        </div>
+        <div class="border-l-2 pl-3" style="border-color:#f87171;">
+          <div class="text-slate-200">annotation band · FAIL</div>
+          <div class="font-mono text-slate-500 text-[10.5px]">fill rgba(248,113,113,0.14)</div>
+        </div>
+        <div class="border-l-2 pl-3" style="border-color:#fde047;">
+          <div class="text-slate-200">anchor needle</div>
+          <div class="font-mono text-slate-500 text-[10.5px]">r=3 · stroke 1.5 · #fde047</div>
+        </div>
+        <div class="border-l-2 pl-3" style="border-color:#22d3ee;">
+          <div class="text-slate-200">target needle</div>
+          <div class="font-mono text-slate-500 text-[10.5px]">r=3 · stroke 1.5 · #22d3ee</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 06 PATTERNS                                                  -->
+<!-- ============================================================ -->
+<section id="patterns" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">06</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Patterns</h2>
+    <span class="cap ml-2">how components combine</span>
+  </div>
+
+  <!-- PANEL HEADER -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Panel header · counts &amp; primary action</span>
+      <span class="cap">left meta · right action cluster</span>
+    </div>
+    <div class="p-5">
+      <div class="rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center justify-between px-3 h-10 border-b" style="border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-center gap-2.5">
+            <span class="text-[12.5px] font-medium text-slate-200">Constraint Inspector</span>
+            <span class="text-[10.5px] font-mono text-slate-500">6 rules</span>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] font-mono">
+            <span class="flex items-center gap-1 text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>4 pass</span>
+            <span class="flex items-center gap-1 text-rose-400"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>1 fail</span>
+            <span class="flex items-center gap-1 text-amber-400"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>1 unresolved</span>
+            <div class="w-px h-4 bg-slate-800"></div>
+            <button class="flex items-center gap-1 px-2 py-1 rounded-sm bg-slate-800/70 hover:bg-slate-700/70 border border-slate-700/60 text-slate-200 text-[11px]">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              New constraint
+            </button>
+          </div>
+        </div>
+        <div class="h-16 grid-bg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM SECTION -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">FormSection chrome</span>
+      <span class="cap">uppercase label + kbd hint · hairline bottom</span>
+    </div>
+    <div class="p-5">
+      <div class="rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+        <section class="px-5 pt-4 pb-4 border-b" style="border-color:rgba(30,41,59,0.5);">
+          <div class="flex items-baseline gap-2 whitespace-nowrap mb-2">
+            <span class="cap">name</span>
+            <span class="text-[9.5px] font-mono text-slate-600 tracking-tight">[N] focus</span>
+            <span class="ml-auto text-[10px] font-mono text-slate-500 hover:text-slate-200 cursor-pointer">reset</span>
+          </div>
+          <div class="flex items-stretch rounded-sm bg-[#0a0e14] border border-slate-800/80">
+            <input value="tDSR — Data Read Setup" class="flex-1 bg-transparent px-2.5 py-2 text-[13px] font-mono text-slate-100 outline-none" />
+          </div>
+        </section>
+        <section class="px-5 pt-4 pb-4">
+          <div class="flex items-baseline gap-2 whitespace-nowrap mb-2">
+            <span class="cap">type</span>
+            <span class="text-[9.5px] font-mono text-slate-600 tracking-tight">[1–5] cycle</span>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-sky-500/10 border border-current text-sky-300 font-medium text-[11px] whitespace-nowrap">
+              <span class="font-mono text-[10px]">tSU</span><span>·</span><span>Setup</span>
+            </button>
+            <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 text-[11px] whitespace-nowrap">
+              <span class="font-mono text-[10px]">tH</span><span>·</span><span>Hold</span>
+            </button>
+            <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 text-[11px] whitespace-nowrap">
+              <span class="font-mono text-[10px]">tPD</span><span>·</span><span>Prop</span>
+            </button>
+            <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 text-[11px] whitespace-nowrap">
+              <span class="font-mono text-[10px]">tW</span><span>·</span><span>Pulse</span>
+            </button>
+            <button class="px-1.5 py-2 rounded-sm flex items-baseline justify-center gap-1 bg-[#0a0e14] border border-slate-800/80 text-slate-300 text-[11px] whitespace-nowrap">
+              <span class="font-mono text-[10px]">tC</span><span>·</span><span>Cycle</span>
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHROME -->
+  <div class="rounded-sm border mb-3" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Modal chrome</span>
+      <span class="cap">header · body · footer · 56 / 1fr / 56</span>
+    </div>
+    <div class="p-5 grid-bg">
+      <div class="rounded-sm border mx-auto" style="background:#0d1117; border-color:rgba(51,65,85,0.6); box-shadow:0 30px 90px -20px rgba(0,0,0,0.8); max-width:780px;">
+        <!-- header -->
+        <div class="flex items-center justify-between px-5 h-14 border-b" style="background:#11161e; border-color:rgba(30,41,59,0.7);">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-sky-500/10 border border-sky-500/30 text-sky-300 font-mono text-[10.5px]">tSU</span>
+            <div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-[14px] text-slate-100">New Constraint</span>
+                <span class="text-[12px] text-slate-500 font-mono">/ Setup</span>
+              </div>
+              <div class="cap-sm mt-0.5">constraints · builder</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono uppercase tracking-widest">
+              <span class="w-1 h-1 rounded-full bg-emerald-400"></span> live · pass
+            </span>
+            <button class="w-7 h-7 flex items-center justify-center rounded-sm hover:bg-slate-800/60 text-slate-500 hover:text-slate-200">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- body -->
+        <div class="px-5 py-6 text-[11.5px] font-mono text-slate-500">
+          <div class="rounded-sm h-32 flex items-center justify-center" style="background:#0a0e14; border:1px dashed rgba(30,41,59,0.7);">
+            modal body · 1140 × 860 default · overflow-y-auto · waveform preview floors at 320 px
+          </div>
+        </div>
+        <!-- footer -->
+        <div class="flex items-center justify-between px-5 h-14 border-t" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+          <div class="text-[10.5px] font-mono text-slate-600">[esc] cancel &nbsp;/&nbsp; [⌘ ⏎] add constraint</div>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-1.5 text-[12.5px] text-slate-400 hover:text-slate-100">Cancel</button>
+            <button class="px-4 py-1.5 rounded-sm bg-slate-100 hover:bg-white text-slate-900 text-[12.5px] font-medium border border-slate-100">Add constraint</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS FOOTER -->
+  <div class="rounded-sm border" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="h-10 px-5 border-b flex items-center justify-between" style="border-color:rgba(30,41,59,0.7);">
+      <span class="text-[12.5px] text-slate-200">Status footer</span>
+      <span class="cap">28 px · mono 10.5 · slate-500</span>
+    </div>
+    <div class="p-5 grid-bg">
+      <div class="flex items-center justify-between px-3 h-7 border-t border-b text-[10.5px] font-mono text-slate-500" style="background:#0a0e14; border-color:rgba(30,41,59,0.7);">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+            1 constraint violated
+          </span>
+          <span class="text-slate-600">·</span>
+          <span>solver: cycle-accurate</span>
+          <span class="text-slate-600">·</span>
+          <span>iter 1 / 1</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span>last solve: 0.42 ms</span>
+          <span class="text-slate-600">·</span>
+          <span>5 sig · 6 cstr</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hairline"></div>
+
+<!-- ============================================================ -->
+<!-- 07 MOTION + COPY                                             -->
+<!-- ============================================================ -->
+<section id="motion" class="pt-14 pb-12">
+  <div class="flex items-baseline gap-3 mb-6">
+    <span class="ix">07</span>
+    <h2 class="text-[22px] tracking-tight font-medium text-slate-100">Motion &amp; voice</h2>
+    <span class="cap ml-2">small movements · precise words</span>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap mb-4">motion</div>
+      <ul class="space-y-3 text-[12.5px] text-slate-300">
+        <li class="flex items-baseline gap-3"><span class="font-mono text-slate-500 text-[10.5px] w-24 flex-shrink-0">none</span><span>Status changes (pass → fail). Numbers update with no easing — they're data.</span></li>
+        <li class="flex items-baseline gap-3"><span class="font-mono text-slate-500 text-[10.5px] w-24 flex-shrink-0">tint · 120ms</span><span>Hover row tint, button background. <span class="font-mono text-slate-500">transition: background-color 120ms</span></span></li>
+        <li class="flex items-baseline gap-3"><span class="font-mono text-slate-500 text-[10.5px] w-24 flex-shrink-0">reveal · 160ms</span><span>Trash icon fade-in on row hover. <span class="font-mono text-slate-500">opacity 0 → 100</span></span></li>
+        <li class="flex items-baseline gap-3"><span class="font-mono text-slate-500 text-[10.5px] w-24 flex-shrink-0">chevron · 200ms</span><span>Section collapse rotation. <span class="font-mono text-slate-500">transform: rotate(90deg)</span></span></li>
+        <li class="flex items-baseline gap-3"><span class="font-mono text-slate-500 text-[10.5px] w-24 flex-shrink-0">no slide</span><span>Modals appear instantly with backdrop blur — feel like a tool, not an app.</span></li>
+      </ul>
+    </div>
+    <div class="rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+      <div class="cap mb-4">voice &amp; copy</div>
+      <ul class="space-y-3 text-[12.5px] text-slate-300">
+        <li><span class="font-mono text-slate-100">"live · pass"</span> — uppercase, mono, separated by middots. Never "Pass!"</li>
+        <li><span class="font-mono text-slate-100">"1 constraint violated"</span> — count the thing, name it, end the sentence.</li>
+        <li><span class="font-mono text-slate-100">"all constraints satisfied"</span> — lowercase summary state in footers.</li>
+        <li><span class="font-mono text-slate-100">"≥ 30 ns"</span> — inequality + value + unit. Never round; trust the solver.</li>
+        <li><span class="font-mono text-slate-100">"try a different edge direction"</span> — diagnostic, not apology, in the empty-state overlay.</li>
+        <li><span class="font-mono text-slate-100">"solver: cycle-accurate · iter 1 / 1"</span> — pretend the user is reading a debugger status bar.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-3 rounded-sm border p-5" style="background:#0d1117; border-color:rgba(30,41,59,0.7);">
+    <div class="cap mb-3">keyboard model · standard hints to surface</div>
+    <div class="grid grid-cols-3 gap-x-6 gap-y-2 text-[11.5px] font-mono text-slate-400">
+      <div class="flex justify-between"><span>[N]</span><span class="text-slate-500">focus name field</span></div>
+      <div class="flex justify-between"><span>[1–5]</span><span class="text-slate-500">cycle constraint type</span></div>
+      <div class="flex justify-between"><span>[esc]</span><span class="text-slate-500">close modal</span></div>
+      <div class="flex justify-between"><span>[⌘ ⏎]</span><span class="text-slate-500">primary commit</span></div>
+      <div class="flex justify-between"><span>[⌘ +]</span><span class="text-slate-500">zoom in (waveform)</span></div>
+      <div class="flex justify-between"><span>[⌘ −]</span><span class="text-slate-500">zoom out</span></div>
+      <div class="flex justify-between"><span>[F]</span><span class="text-slate-500">fit view</span></div>
+      <div class="flex justify-between"><span>[← →]</span><span class="text-slate-500">nudge cursor ±1 ns</span></div>
+      <div class="flex justify-between"><span>[⌫]</span><span class="text-slate-500">delete selected</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- footer -->
+<footer class="mt-10 pt-6 border-t flex items-center justify-between text-[10.5px] font-mono text-slate-600" style="border-color:rgba(30,41,59,0.7);">
+  <span>dt-solver design system · v0.1.0 · derived from prototype source of truth</span>
+  <span>·</span>
+  <span>when this doc and the prototype disagree, the prototype wins</span>
+</footer>
+
+</main>
+</body>
+</html>
