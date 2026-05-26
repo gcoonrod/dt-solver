@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const ic = createIc({
-      id: body.id,
-      name: body.name,
-      manufacturer: body.manufacturer,
-      data: body.data,
+      id: body.id as string,
+      name: body.name as string,
+      manufacturer: body.manufacturer as string | undefined,
+      data: body.data as object,
     });
     return NextResponse.json(ic, { status: 201 });
   } catch (e: unknown) {

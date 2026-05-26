@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const profile = createProfile({
-      id: body.id,
-      name: body.name,
-      description: body.description,
-      data: body.data,
+      id: body.id as string,
+      name: body.name as string,
+      description: body.description as string | undefined,
+      data: body.data as object,
     });
     return NextResponse.json(profile, { status: 201 });
   } catch (e: unknown) {

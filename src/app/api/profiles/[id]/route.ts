@@ -34,9 +34,9 @@ export async function PUT(
   }
 
   const profile = updateProfile(id, {
-    name: body.name,
-    description: body.description,
-    data: body.data,
+    name: body.name as string | undefined,
+    description: body.description as string | null | undefined,
+    data: body.data as object | undefined,
   });
 
   if (!profile) {

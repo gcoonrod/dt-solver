@@ -34,9 +34,9 @@ export async function PUT(
   }
 
   const ic = updateIc(id, {
-    name: body.name,
-    manufacturer: body.manufacturer,
-    data: body.data,
+    name: body.name as string | undefined,
+    manufacturer: body.manufacturer as string | null | undefined,
+    data: body.data as object | undefined,
   });
 
   if (!ic) {
