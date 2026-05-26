@@ -65,7 +65,7 @@ export function updateIc(
 
   if (fields.length === 0) return existing;
 
-  fields.push("updated_at = datetime('now')");
+  fields.push("updated_at = strftime('%Y-%m-%d %H:%M:%f','now')");
   values.push(id);
 
   db.prepare(`UPDATE ic_definitions SET ${fields.join(', ')} WHERE id = ?`).run(...values);

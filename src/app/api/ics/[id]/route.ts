@@ -21,7 +21,7 @@ export async function PUT(
   const { id } = await params;
   const body = await request.json();
 
-  if (!body.name && !body.manufacturer && !body.data) {
+  if (body.name === undefined && body.manufacturer === undefined && body.data === undefined) {
     return NextResponse.json(
       { error: 'At least one field required: name, manufacturer, data' },
       { status: 400 }

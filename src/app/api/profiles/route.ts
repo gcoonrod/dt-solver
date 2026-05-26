@@ -17,12 +17,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const profile = createProfile({
-    id: body.id,
-    name: body.name,
-    description: body.description,
-    data: body.data,
-  });
-
-  return NextResponse.json(profile, { status: 201 });
+  try {
+    const profile = createProfile({
+      id: body.id,
+      name: body.name,
+      description: body.description,
+      data: body.data,
+    });
+    return NextResponse.json(profile, { status: 201 });
+  } catch (e: unknown) {
+    if (e instanceof Error && e.message.includes('UNIQUE constraint failed')) {
+      return NextResponse.json({ error: `Profile with id '${body.id}' already exists` }, { status: 409 });
+    }
+    throw e;
+  }
 }
