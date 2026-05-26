@@ -24,6 +24,7 @@ import { TEST_STORE_STATE } from "@/test/fixtures";
 // gate restoration on a truthy saved descriptor — otherwise the stub leaks
 // to every later test file in the same Vitest worker.
 let originalClientHeight: PropertyDescriptor | undefined;
+const originalFetch = globalThis.fetch;
 
 beforeAll(() => {
   originalClientHeight = Object.getOwnPropertyDescriptor(
@@ -48,6 +49,7 @@ afterAll(() => {
   } else {
     delete (HTMLElement.prototype as { clientHeight?: number }).clientHeight;
   }
+  globalThis.fetch = originalFetch;
 });
 
 beforeEach(() => {

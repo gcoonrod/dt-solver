@@ -207,18 +207,24 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     const s = get();
     if (!s.profileId) return;
     set({ isSaving: true });
-    const data = {
-      signals: s.signals,
-      constraints: s.constraints,
-      viewport: { tMinNs: s.activeProfile.defaultWindowNs.tMinNs, tMaxNs: s.activeProfile.defaultWindowNs.tMaxNs },
-    };
-    await fetch(`/api/profiles/${s.profileId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: s.activeProfile.name, data }),
-    });
-    set({ isDirty: false, isSaving: false });
-    get().fetchProfileList();
+    try {
+      const data = {
+        signals: s.signals,
+        constraints: s.constraints,
+        viewport: { tMinNs: s.tMinNs, tMaxNs: s.tMaxNs },
+      };
+      const res = await fetch(`/api/profiles/${s.profileId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: s.activeProfile.name, data }),
+      });
+      if (res.ok) {
+        set({ isDirty: false });
+        get().fetchProfileList();
+      }
+    } finally {
+      set({ isSaving: false });
+    }
   },
 
   async createProfile(name: string) {
@@ -241,7 +247,17 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     if (s.profileId === id && s.profileList.length > 0) {
       await get().loadProfile(s.profileList[0].id);
     } else if (s.profileList.length === 0) {
-      set({ profileId: null, signals: [], constraints: [], solved: [], isLoading: false });
+      set({
+        profileId: null,
+        activeProfile: emptyProfile,
+        signals: [],
+        constraints: [],
+        solved: [],
+        isDirty: false,
+        tMinNs: emptyProfile.defaultWindowNs.tMinNs,
+        tMaxNs: emptyProfile.defaultWindowNs.tMaxNs,
+        isLoading: false,
+      });
     }
   },
 }));

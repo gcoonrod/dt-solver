@@ -9,6 +9,8 @@ const AUTO_SAVE_DELAY_MS = 2000;
 export function usePersistence() {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  const prevSignalsRef = useRef<unknown>(null);
+  const prevConstraintsRef = useRef<unknown>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -21,20 +23,34 @@ export function usePersistence() {
       } else {
         useTimingStore.setState({ isLoading: false });
       }
+    }).catch(() => {
+      if (mountedRef.current) {
+        useTimingStore.setState({ isLoading: false });
+      }
     });
     return () => { mountedRef.current = false; };
   }, []);
 
   useEffect(() => {
-    const unsub = useTimingStore.subscribe((state, prev) => {
-      if (state.isDirty && !prev.isDirty && state.profileId) {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => {
-          if (mountedRef.current) {
-            useTimingStore.getState().saveProfile();
-          }
-        }, AUTO_SAVE_DELAY_MS);
-      }
+    const s = useTimingStore.getState();
+    prevSignalsRef.current = s.signals;
+    prevConstraintsRef.current = s.constraints;
+
+    const unsub = useTimingStore.subscribe((state) => {
+      if (!state.isDirty || !state.profileId) return;
+      const signalsChanged = state.signals !== prevSignalsRef.current;
+      const constraintsChanged = state.constraints !== prevConstraintsRef.current;
+      if (!signalsChanged && !constraintsChanged) return;
+
+      prevSignalsRef.current = state.signals;
+      prevConstraintsRef.current = state.constraints;
+
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          useTimingStore.getState().saveProfile();
+        }
+      }, AUTO_SAVE_DELAY_MS);
     });
     return () => {
       unsub();

@@ -8,7 +8,7 @@
 - The store SHALL contain `isDirty: boolean` indicating unsaved changes exist.
 - The store SHALL contain `isSaving: boolean` indicating a save is in progress.
 - The store SHALL contain `isLoading: boolean` indicating a profile is being fetched.
-- The store SHALL contain `profileList: { id: string; name: string; updatedAt: string }[]` for the profile switcher.
+- The store SHALL contain `profileList: { id: string; name: string; updated_at: string }[]` for the profile switcher.
 - The store SHALL expose `loadProfile(id: string): Promise<void>` that fetches a profile from the API and calls `setActiveProfile`.
 - The store SHALL expose `saveProfile(): Promise<void>` that PUTs the current signals/constraints/viewport to the API.
 - The store SHALL expose `createProfile(name: string): Promise<string>` that POSTs a new profile and returns its ID.
