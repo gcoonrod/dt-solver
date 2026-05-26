@@ -4,11 +4,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import ChannelLabels from "@/components/features/ChannelLabels";
 import { formatChannelLabelDisplay } from "@/components/features/signalDisplay";
 import { useTimingStore } from "@/store/useTimingStore";
+import { TEST_STORE_STATE } from "@/test/fixtures";
 
-const INITIAL_STORE_STATE = useTimingStore.getInitialState();
+
 
 beforeEach(() => {
-  useTimingStore.setState(INITIAL_STORE_STATE, true);
+  useTimingStore.setState(TEST_STORE_STATE);
 });
 
 afterEach(() => {

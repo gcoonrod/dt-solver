@@ -4,12 +4,13 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import SignalBuilder from "@/components/features/SignalBuilder";
 import { useTimingStore } from "@/store/useTimingStore";
+import { TEST_STORE_STATE } from "@/test/fixtures";
 import type { SignalBuilderInitial } from "@/types/signal";
 
-const INITIAL_STORE_STATE = useTimingStore.getInitialState();
+
 
 beforeEach(() => {
-  useTimingStore.setState(INITIAL_STORE_STATE, true);
+  useTimingStore.setState(TEST_STORE_STATE);
 });
 
 afterEach(() => {

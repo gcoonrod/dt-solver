@@ -1,20 +1,27 @@
 import { create } from "zustand";
 
 import { solve } from "@/core/solver";
-import { W65C02S_14MHz } from "@/data/w65c02s-14mhz";
 import type { Constraint } from "@/types/constraint";
 import type { TimingProfile } from "@/types/profile";
 import type { AnySignal, SignalBuilderInitial } from "@/types/signal";
 
 export type { SignalBuilderInitial };
 
+export interface ProfileListItem {
+  id: string;
+  name: string;
+  updated_at: string;
+}
+
 export interface TimingState {
+  // ----- persistence -----
+  profileId: string | null;
+  isDirty: boolean;
+  isSaving: boolean;
+  isLoading: boolean;
+  profileList: ProfileListItem[];
+
   // ----- domain -----
-  // `activeProfile` is the as-loaded snapshot — the source for the title bar
-  // and future "revert to profile" actions. `signals` / `constraints` are the
-  // editable working copy that addSignal/removeSignal/addConstraint/removeConstraint
-  // mutate. They drift from `activeProfile.signals` / `.constraints` after any
-  // such edit; `setActiveProfile` is the only path that re-syncs them.
   activeProfile: TimingProfile;
   signals: AnySignal[];
   constraints: Constraint[];
@@ -52,20 +59,39 @@ export interface TimingState {
   closeBuilder: () => void;
   openSignalBuilder: (initial?: SignalBuilderInitial) => void;
   closeSignalBuilder: () => void;
+
+  // ----- persistence actions -----
+  fetchProfileList: () => Promise<void>;
+  loadProfile: (id: string) => Promise<void>;
+  saveProfile: () => Promise<void>;
+  createProfile: (name: string) => Promise<string>;
+  deleteProfile: (id: string) => Promise<void>;
 }
 
-const profile = W65C02S_14MHz;
-const initialSolved = solve(profile.signals, profile.constraints, 1000);
+const emptyProfile: TimingProfile = {
+  id: "",
+  name: "",
+  description: "",
+  signals: [],
+  constraints: [],
+  defaultWindowNs: { tMinNs: 0, tMaxNs: 150 },
+};
 
 export const useTimingStore = create<TimingState>()((set, get) => ({
-  activeProfile: profile,
-  signals: profile.signals,
-  constraints: profile.constraints,
-  solved: initialSolved,
+  profileId: null,
+  isDirty: false,
+  isSaving: false,
+  isLoading: true,
+  profileList: [],
 
-  tMinNs: profile.defaultWindowNs.tMinNs,
-  tMaxNs: profile.defaultWindowNs.tMaxNs,
-  cursorTimeNs: 35.7,
+  activeProfile: emptyProfile,
+  signals: [],
+  constraints: [],
+  solved: [],
+
+  tMinNs: 0,
+  tMaxNs: 150,
+  cursorTimeNs: 0,
   hoveredConstraintId: null,
   selectedSignalId: null,
 
@@ -90,7 +116,7 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     });
   },
   addSignal(sig) {
-    set((s) => ({ signals: [...s.signals, sig] }));
+    set((s) => ({ signals: [...s.signals, sig], isDirty: true }));
     get().resolve();
   },
   removeSignal(id) {
@@ -99,15 +125,16 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
       constraints: s.constraints.filter(
         (c) => c.anchor.signalId !== id && c.target.signalId !== id,
       ),
+      isDirty: true,
     }));
     get().resolve();
   },
   addConstraint(c) {
-    set((s) => ({ constraints: [...s.constraints, c] }));
+    set((s) => ({ constraints: [...s.constraints, c], isDirty: true }));
     get().resolve();
   },
   removeConstraint(id) {
-    set((s) => ({ constraints: s.constraints.filter((c) => c.id !== id) }));
+    set((s) => ({ constraints: s.constraints.filter((c) => c.id !== id), isDirty: true }));
     get().resolve();
   },
   setCursor(timeNs) {
@@ -148,5 +175,73 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
   },
   closeSignalBuilder() {
     set({ signalBuilderOpen: false, signalBuilderInitial: null });
+  },
+
+  async fetchProfileList() {
+    const res = await fetch("/api/profiles");
+    const list = await res.json() as ProfileListItem[];
+    set({ profileList: list });
+  },
+
+  async loadProfile(id: string) {
+    set({ isLoading: true });
+    const res = await fetch(`/api/profiles/${id}`);
+    if (!res.ok) {
+      set({ isLoading: false });
+      return;
+    }
+    const row = await res.json() as { id: string; name: string; description: string | null; data: { signals: AnySignal[]; constraints: Constraint[]; viewport: { tMinNs: number; tMaxNs: number } } };
+    const profile: TimingProfile = {
+      id: row.id,
+      name: row.name,
+      description: row.description ?? "",
+      signals: row.data.signals,
+      constraints: row.data.constraints,
+      defaultWindowNs: row.data.viewport,
+    };
+    get().setActiveProfile(profile);
+    set({ profileId: row.id, isDirty: false, isLoading: false });
+  },
+
+  async saveProfile() {
+    const s = get();
+    if (!s.profileId) return;
+    set({ isSaving: true });
+    const data = {
+      signals: s.signals,
+      constraints: s.constraints,
+      viewport: { tMinNs: s.activeProfile.defaultWindowNs.tMinNs, tMaxNs: s.activeProfile.defaultWindowNs.tMaxNs },
+    };
+    await fetch(`/api/profiles/${s.profileId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: s.activeProfile.name, data }),
+    });
+    set({ isDirty: false, isSaving: false });
+    get().fetchProfileList();
+  },
+
+  async createProfile(name: string) {
+    const id = `profile-${Date.now().toString(36)}`;
+    const data = { signals: [], constraints: [], viewport: { tMinNs: 0, tMaxNs: 150 } };
+    await fetch("/api/profiles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, name, data }),
+    });
+    await get().fetchProfileList();
+    await get().loadProfile(id);
+    return id;
+  },
+
+  async deleteProfile(id: string) {
+    await fetch(`/api/profiles/${id}`, { method: "DELETE" });
+    await get().fetchProfileList();
+    const s = get();
+    if (s.profileId === id && s.profileList.length > 0) {
+      await get().loadProfile(s.profileList[0].id);
+    } else if (s.profileList.length === 0) {
+      set({ profileId: null, signals: [], constraints: [], solved: [], isLoading: false });
+    }
   },
 }));

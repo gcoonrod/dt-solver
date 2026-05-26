@@ -11,11 +11,7 @@ import {
 
 import Page from "@/app/page";
 import { useTimingStore } from "@/store/useTimingStore";
-
-// Captured once at module load so `beforeEach` reverts mutations from prior
-// tests without re-deriving from a profile constant — the store already solves
-// at bootstrap, so re-solving here would be wasted work.
-const INITIAL_STORE_STATE = useTimingStore.getInitialState();
+import { TEST_STORE_STATE } from "@/test/fixtures";
 
 // jsdom returns 0 for clientHeight, which would make the splitter drag math
 // divide by zero. Stub a non-zero height on the prototype for the duration of
@@ -55,7 +51,8 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  useTimingStore.setState(INITIAL_STORE_STATE, true);
+  useTimingStore.setState(TEST_STORE_STATE);
+  globalThis.fetch = () => Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
 });
 
 afterEach(() => {
