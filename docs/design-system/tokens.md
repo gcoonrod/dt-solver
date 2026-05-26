@@ -166,9 +166,9 @@ No other radii are permitted.
 
 | Token | Value | Use |
 |---|---|---|
-| `stroke.hairline` | `1px ${color.line.strong}` | Default border on cards, inputs, panels |
-| `stroke.divider` | `1px ${color.line.med}` | Inner section dividers |
-| `stroke.row` | `1px ${color.line.weak}` | Table row separators |
+| `stroke.hairline` | `1px solid ${color.line.strong}` | Default border on cards, inputs, panels |
+| `stroke.divider` | `1px solid ${color.line.med}` | Inner section dividers |
+| `stroke.row` | `1px solid ${color.line.weak}` | Table row separators |
 | `stroke.trace` | `1.6` (no unit) | SVG waveform trace stroke-width |
 | `stroke.icon` | `1.75` (no unit) | Lucide-style icon stroke-width |
 

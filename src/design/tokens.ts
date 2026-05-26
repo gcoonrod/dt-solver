@@ -158,16 +158,24 @@ export const elevation = {
  *     live · pass
  *   </span>
  */
+const STATUS_PILL_CLASSES: Record<StatusKey, string> = {
+  pass:       'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300',
+  fail:       'bg-rose-500/10 border border-rose-500/30 text-rose-300',
+  unresolved: 'bg-amber-500/10 border border-amber-500/30 text-amber-300',
+};
+
+const STATUS_DOT_CLASSES: Record<StatusKey, string> = {
+  pass:       'w-1 h-1 rounded-full bg-emerald-400',
+  fail:       'w-1 h-1 rounded-full bg-rose-400',
+  unresolved: 'w-1 h-1 rounded-full bg-amber-400',
+};
+
 export const recipe = {
   statusPill: Object.assign(
-    (status: StatusKey) => {
-      const { hue } = color.status[status];
-      return `bg-${hue}-500/10 border border-${hue}-500/30 text-${hue}-300`;
-    },
+    (status: StatusKey) => STATUS_PILL_CLASSES[status],
     {
       container: 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm font-mono text-[10.5px] uppercase tracking-widest',
-      dot: (status: StatusKey) =>
-        `w-1 h-1 rounded-full bg-${color.status[status].hue}-400`,
+      dot: (status: StatusKey) => STATUS_DOT_CLASSES[status],
     }
   ),
 

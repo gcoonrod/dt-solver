@@ -13,7 +13,7 @@
 - [ ] 1.5 Edit the HTML catalog `docs/design-system/index.html` § 02.4 to
   include a 4-up grid instead of 3-up, with the new yellow status card
   matching the visual spec of the existing three.
-- [ ] 1.6 Run `pnpm typecheck` and confirm no errors. `StatusKey`
+- [ ] 1.6 Run `pnpm build` and confirm no errors. `StatusKey`
   consumers will need updating in step 2 but `tokens.ts` itself is
   self-contained.
 

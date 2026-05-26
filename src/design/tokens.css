@@ -78,6 +78,7 @@
   --stroke-trace:    1.6;
   --stroke-icon:     1.75;
 
+  --elevation-flat:     none;
   --elevation-modal:    0 30px 90px -20px rgba(0, 0, 0, 0.8);
   --elevation-backdrop: rgba(2, 6, 12, 0.66);
   --elevation-backdrop-blur: 4px;
@@ -88,6 +89,8 @@
   --size-footer-status:  28px;
   --size-row-inspector:  40px;
   --size-row-waveform:   70px;
+  --size-row-waveform-trace:  28px;
+  --size-row-waveform-header: 38px;
   --size-sidebar-w:      300px;
   --size-modal-w:        1140px;
   --size-modal-h:        860px;
