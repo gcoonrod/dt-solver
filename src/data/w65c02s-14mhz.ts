@@ -17,6 +17,7 @@
 // All times in nanoseconds.
 
 import type { Constraint } from "@/types/constraint";
+import type { ICDefinition, SignalTemplate, ConstraintTemplate } from "@/types/ic";
 import type { TimingProfile } from "@/types/profile";
 import type { AnySignal } from "@/types/signal";
 
@@ -159,4 +160,26 @@ export const W65C02S_14MHz: TimingProfile = {
   signals: W65C02S_14MHz_signals,
   constraints: W65C02S_14MHz_constraints,
   defaultWindowNs: { tMinNs: 0, tMaxNs: 150 },
+};
+
+export const W65C02S_14MHz_signalTemplates: SignalTemplate[] =
+  W65C02S_14MHz_signals.map((s) => ({ ...s, templateId: s.id }));
+
+export const W65C02S_14MHz_constraintTemplates: ConstraintTemplate[] = [
+  { templateId: "tads", name: "tADS — Address Setup",     type: "SETUP",      anchorTemplateId: "phi2", anchorEdge: "FALLING",    targetTemplateId: "addr", targetEdge: "TRANSITION", minNs: 30 },
+  { templateId: "tah",  name: "tAH — Address Hold",       type: "HOLD",       anchorTemplateId: "phi2", anchorEdge: "FALLING",    targetTemplateId: "addr", targetEdge: "TRANSITION", minNs: 10 },
+  { templateId: "tdsr", name: "tDSR — Data Read Setup",   type: "SETUP",      anchorTemplateId: "phi2", anchorEdge: "FALLING",    targetTemplateId: "data", targetEdge: "TRANSITION", minNs: 10 },
+  { templateId: "tbvd", name: "tBVD — Address Valid Delay", type: "PROP_DELAY", anchorTemplateId: "phi2", anchorEdge: "RISING",    targetTemplateId: "addr", targetEdge: "TRANSITION", maxNs: 30 },
+  { templateId: "trws", name: "tRWS — R/W̄ Setup",        type: "SETUP",      anchorTemplateId: "phi2", anchorEdge: "FALLING",    targetTemplateId: "rw",   targetEdge: "TRANSITION", minNs: 20 },
+  { templateId: "tcs",  name: "tCS — Chip Select Setup",  type: "SETUP",      anchorTemplateId: "phi2", anchorEdge: "FALLING",    targetTemplateId: "cs",   targetEdge: "FALLING",    minNs: 25 },
+];
+
+export const W65C02S_14MHz_IC: ICDefinition = {
+  id: "w65c02s-14mhz",
+  name: "W65C02S @ 14 MHz",
+  manufacturer: "WDC",
+  description: "W65C02S 8-bit microprocessor, 14 MHz / 5.0 V speed grade",
+  speedGrades: ["8MHz", "14MHz"],
+  signals: W65C02S_14MHz_signalTemplates,
+  constraints: W65C02S_14MHz_constraintTemplates,
 };

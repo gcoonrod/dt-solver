@@ -25,11 +25,11 @@ afterEach(() => {
 });
 
 describe("seed", () => {
-  it("inserts one IC definition and one profile", () => {
+  it("inserts two IC definitions and one profile", () => {
     seed(db);
 
     const ics = db.prepare("SELECT COUNT(*) as n FROM ic_definitions").get() as { n: number };
-    expect(ics.n).toBe(1);
+    expect(ics.n).toBe(2);
 
     const profiles = db.prepare("SELECT COUNT(*) as n FROM profiles").get() as { n: number };
     expect(profiles.n).toBe(1);
@@ -50,19 +50,19 @@ describe("seed", () => {
 
     const data = JSON.parse(row.data);
     expect(data.signals).toHaveLength(W65C02S_14MHz.signals.length);
-    expect(data.constraints).toHaveLength(W65C02S_14MHz.constraints.length);
+    expect(data.constraints).toHaveLength(6);
   });
 
-  it("seeds a profile with viewport from defaultWindowNs", () => {
+  it("seeds a combined profile with viewport", () => {
     seed(db);
 
-    const row = db.prepare("SELECT * FROM profiles WHERE id = ?").get(W65C02S_14MHz.id) as {
+    const row = db.prepare("SELECT * FROM profiles WHERE id = 'w65c02s-62256-demo'").get() as {
       data: string;
     };
 
     const data = JSON.parse(row.data);
     expect(data.viewport).toEqual(W65C02S_14MHz.defaultWindowNs);
-    expect(data.signals).toHaveLength(W65C02S_14MHz.signals.length);
+    expect(data.signals.length).toBeGreaterThan(W65C02S_14MHz.signals.length);
   });
 
   it("is idempotent — running twice does not create duplicates", () => {
@@ -70,7 +70,7 @@ describe("seed", () => {
     seed(db);
 
     const ics = db.prepare("SELECT COUNT(*) as n FROM ic_definitions").get() as { n: number };
-    expect(ics.n).toBe(1);
+    expect(ics.n).toBe(2);
 
     const profiles = db.prepare("SELECT COUNT(*) as n FROM profiles").get() as { n: number };
     expect(profiles.n).toBe(1);
