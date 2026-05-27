@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import ICLibrarySection from "@/components/panels/ICLibrarySection";
 import { useTimingStore } from "@/store/useTimingStore";
 import type { AnySignal, SignalTypeId } from "@/types/signal";
 
@@ -135,6 +136,8 @@ export default function ComponentLibrary() {
         </div>
       </div>
 
+      <ICLibrarySection />
+
       {/* Section header */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -211,6 +214,10 @@ interface SignalRowCLProps {
 
 function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
   const [hover, setHover] = useState(false);
+  const icLibrary = useTimingStore((s) => s.icLibrary);
+  const provenanceLabel = sig.provenance
+    ? icLibrary.find((ic) => ic.id === sig.provenance?.icId)?.name ?? sig.provenance.icId
+    : null;
   const baseMeta =
     sig.type === "CLOCK"
       ? `${sig.frequencyMHz}M`
@@ -245,6 +252,11 @@ function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
         </div>
         <div className="text-[10px] text-slate-500 truncate leading-tight mt-0.5">
           {sig.description}
+          {provenanceLabel && (
+            <span className="ml-1.5 px-1 py-0 rounded-sm bg-slate-800/60 text-[8.5px] text-slate-500 border border-slate-700/40">
+              {provenanceLabel}
+            </span>
+          )}
         </div>
       </div>
       {hover ? (

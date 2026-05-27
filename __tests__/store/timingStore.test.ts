@@ -278,3 +278,43 @@ describe("useTimingStore — initial empty state", () => {
     expect(s.signals).toHaveLength(0);
   });
 });
+
+describe("useTimingStore — importSignalFromIC", () => {
+  it("creates a signal with a fresh id and provenance", () => {
+    const template = {
+      templateId: "phi2",
+      id: "phi2",
+      type: "CLOCK" as const,
+      name: "PHI2",
+      frequencyMHz: 14,
+      dutyCycle: 0.5,
+      phaseOffsetNs: 0,
+    };
+    const before = useTimingStore.getState().signals.length;
+    useTimingStore.getState().importSignalFromIC("w65c02s", "phi2", template);
+    const after = useTimingStore.getState();
+    expect(after.signals.length).toBe(before + 1);
+
+    const imported = after.signals[after.signals.length - 1];
+    expect(imported.id).not.toBe("phi2");
+    expect(imported.name).toBe("PHI2");
+    expect(imported.provenance).toBeDefined();
+    expect(imported.provenance!.icId).toBe("w65c02s");
+    expect(imported.provenance!.templateId).toBe("phi2");
+    expect(imported.provenance!.importedAt).toBeTruthy();
+  });
+
+  it("sets isDirty to true", () => {
+    useTimingStore.setState({ isDirty: false });
+    const template = {
+      templateId: "test",
+      id: "test",
+      type: "LINE" as const,
+      name: "Test",
+      baseState: "LOW" as const,
+      transitions: [],
+    };
+    useTimingStore.getState().importSignalFromIC("ic1", "test", template);
+    expect(useTimingStore.getState().isDirty).toBe(true);
+  });
+});

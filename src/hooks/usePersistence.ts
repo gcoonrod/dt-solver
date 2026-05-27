@@ -15,7 +15,10 @@ export function usePersistence() {
   useEffect(() => {
     mountedRef.current = true;
     const store = useTimingStore.getState();
-    store.fetchProfileList().then(async () => {
+    Promise.all([
+      store.fetchProfileList(),
+      store.fetchICLibrary(),
+    ]).then(async () => {
       if (!mountedRef.current) return;
       const list = useTimingStore.getState().profileList;
       if (list.length > 0) {

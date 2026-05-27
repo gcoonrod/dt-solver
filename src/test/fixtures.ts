@@ -11,6 +11,7 @@ export const TEST_STORE_STATE: Partial<TimingState> = {
   isSaving: false,
   isLoading: false,
   profileList: [],
+  icLibrary: [],
   activeProfile: profile,
   signals: profile.signals,
   constraints: profile.constraints,

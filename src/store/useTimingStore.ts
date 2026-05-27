@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { solve } from "@/core/solver";
 import type { Constraint } from "@/types/constraint";
+import type { ICDefinition, SignalTemplate } from "@/types/ic";
 import type { TimingProfile } from "@/types/profile";
 import type { AnySignal, SignalBuilderInitial } from "@/types/signal";
 
@@ -20,6 +21,9 @@ export interface TimingState {
   isSaving: boolean;
   isLoading: boolean;
   profileList: ProfileListItem[];
+
+  // ----- IC library -----
+  icLibrary: ICDefinition[];
 
   // ----- domain -----
   activeProfile: TimingProfile;
@@ -66,6 +70,10 @@ export interface TimingState {
   saveProfile: () => Promise<void>;
   createProfile: (name: string) => Promise<string>;
   deleteProfile: (id: string) => Promise<void>;
+
+  // ----- IC library actions -----
+  fetchICLibrary: () => Promise<void>;
+  importSignalFromIC: (icId: string, templateId: string, signal: SignalTemplate) => void;
 }
 
 const emptyProfile: TimingProfile = {
@@ -83,6 +91,7 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
   isSaving: false,
   isLoading: true,
   profileList: [],
+  icLibrary: [],
 
   activeProfile: emptyProfile,
   signals: [],
@@ -262,5 +271,34 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
         isLoading: false,
       });
     }
+  },
+
+  async fetchICLibrary() {
+    const listRes = await fetch("/api/ics");
+    if (!listRes.ok) return;
+    const list = await listRes.json() as { id: string }[];
+    const definitions: ICDefinition[] = [];
+    for (const item of list) {
+      const res = await fetch(`/api/ics/${item.id}`);
+      if (!res.ok) continue;
+      const row = await res.json() as { data: ICDefinition };
+      definitions.push(row.data);
+    }
+    set({ icLibrary: definitions });
+  },
+
+  importSignalFromIC(icId: string, templateId: string, signal: SignalTemplate) {
+    const freshId = `import-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const { templateId: _, ...rest } = signal;
+    const imported: AnySignal = {
+      ...rest,
+      id: freshId,
+      provenance: {
+        icId,
+        templateId,
+        importedAt: new Date().toISOString(),
+      },
+    };
+    get().addSignal(imported);
   },
 }));
