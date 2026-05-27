@@ -20,7 +20,7 @@ function ICEntryCard({ ic }: { ic: ICDefinition }) {
     );
 
   const handleImport = (sig: SignalTemplate) => {
-    importSignal(ic.id, sig.templateId, sig);
+    importSignal(ic.id, sig);
   };
 
   return (
@@ -60,10 +60,11 @@ function ICEntryCard({ ic }: { ic: ICDefinition }) {
                   {sig.name}
                 </span>
                 <button
-                  onClick={() => handleImport(sig)}
+                  onClick={() => !imported && handleImport(sig)}
+                  disabled={imported}
                   className={`flex items-center justify-center w-5 h-5 rounded-sm text-[10px] ${
                     imported
-                      ? "text-emerald-500 opacity-50"
+                      ? "text-emerald-500 opacity-50 cursor-default"
                       : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
                   }`}
                   title={imported ? "Already imported" : `Import ${sig.name}`}

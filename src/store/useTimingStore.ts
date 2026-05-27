@@ -73,7 +73,7 @@ export interface TimingState {
 
   // ----- IC library actions -----
   fetchICLibrary: () => Promise<void>;
-  importSignalFromIC: (icId: string, templateId: string, signal: SignalTemplate) => void;
+  importSignalFromIC: (icId: string, signal: SignalTemplate) => void;
 }
 
 const emptyProfile: TimingProfile = {
@@ -288,9 +288,9 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     set({ icLibrary: results.filter((d): d is ICDefinition => d !== null) });
   },
 
-  importSignalFromIC(icId: string, templateId: string, signal: SignalTemplate) {
+  importSignalFromIC(icId: string, signal: SignalTemplate) {
     const freshId = `import-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const { templateId: _, pin: _pin, ...rest } = signal;
+    const { templateId, pin: _pin, ...rest } = signal;
     const imported: AnySignal = {
       ...rest,
       id: freshId,

@@ -291,7 +291,7 @@ describe("useTimingStore — importSignalFromIC", () => {
       phaseOffsetNs: 0,
     };
     const before = useTimingStore.getState().signals.length;
-    useTimingStore.getState().importSignalFromIC("w65c02s", "phi2", template);
+    useTimingStore.getState().importSignalFromIC("w65c02s", template);
     const after = useTimingStore.getState();
     expect(after.signals.length).toBe(before + 1);
 
@@ -314,7 +314,7 @@ describe("useTimingStore — importSignalFromIC", () => {
       baseState: "LOW" as const,
       transitions: [],
     };
-    useTimingStore.getState().importSignalFromIC("ic1", "test", template);
+    useTimingStore.getState().importSignalFromIC("ic1", template);
     expect(useTimingStore.getState().isDirty).toBe(true);
   });
 });
