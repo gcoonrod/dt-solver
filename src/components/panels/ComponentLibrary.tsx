@@ -2,60 +2,10 @@
 
 import { useState } from "react";
 
+import ICLibrarySection from "@/components/panels/ICLibrarySection";
+import { IconCL } from "@/components/panels/icons";
 import { useTimingStore } from "@/store/useTimingStore";
 import type { AnySignal, SignalTypeId } from "@/types/signal";
-
-// ---- icons ----------------------------------------------------------------
-const ICON_PATHS: Record<string, React.ReactNode> = {
-  plus: <path d="M12 5v14M5 12h14" />,
-  chevron: <path d="M9 6l6 6-6 6" />,
-  "square-wave": <path d="M3 16h3v-8h4v8h4v-8h4v8h3" />,
-  pulse: <path d="M2 12h4l2-6 4 12 2-6h8" />,
-  bus: (
-    <g>
-      <path d="M3 8h3l2 -2h8l2 2h3" />
-      <path d="M3 16h3l2 2h8l2 -2h3" />
-    </g>
-  ),
-  trash: (
-    <g>
-      <path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </g>
-  ),
-  settings: (
-    <g>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .4 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.4 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .4-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.4-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.4H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.4 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
-    </g>
-  ),
-  diamond: <path d="M12 2l10 10-10 10L2 12z" />,
-};
-
-interface IconCLProps {
-  name: string;
-  size?: number;
-  className?: string;
-  strokeWidth?: number;
-}
-
-export function IconCL({ name, size = 14, className = "", strokeWidth = 1.75 }: IconCLProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={strokeWidth}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      {ICON_PATHS[name] ?? null}
-    </svg>
-  );
-}
 
 const signalIconName = (type: AnySignal["type"]): string =>
   type === "CLOCK" ? "square-wave" : type === "BUS" ? "bus" : "pulse";
@@ -135,6 +85,8 @@ export default function ComponentLibrary() {
         </div>
       </div>
 
+      <ICLibrarySection />
+
       {/* Section header */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -211,6 +163,10 @@ interface SignalRowCLProps {
 
 function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
   const [hover, setHover] = useState(false);
+  const icLibrary = useTimingStore((s) => s.icLibrary);
+  const provenanceLabel = sig.provenance
+    ? icLibrary.find((ic) => ic.id === sig.provenance?.icId)?.name ?? sig.provenance.icId
+    : null;
   const baseMeta =
     sig.type === "CLOCK"
       ? `${sig.frequencyMHz}M`
@@ -245,6 +201,11 @@ function SignalRowCL({ sig, selected, onClick, onDelete }: SignalRowCLProps) {
         </div>
         <div className="text-[10px] text-slate-500 truncate leading-tight mt-0.5">
           {sig.description}
+          {provenanceLabel && (
+            <span className="ml-1.5 px-1 py-0 rounded-sm bg-slate-800/60 text-[8.5px] text-slate-500 border border-slate-700/40">
+              {provenanceLabel}
+            </span>
+          )}
         </div>
       </div>
       {hover ? (

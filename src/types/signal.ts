@@ -1,3 +1,5 @@
+import type { Provenance } from "./profile";
+
 export type SignalState = 'HIGH' | 'LOW' | 'HIGH_Z' | 'VALID' | 'INVALID';
 export type EdgeDirection = 'RISING' | 'FALLING' | 'TRANSITION';
 
@@ -6,6 +8,7 @@ export interface BaseSignal {
   name: string;        // e.g., "PHI2", "Address Bus"
   description?: string;
   color?: string;      // For the D3 renderer
+  provenance?: Provenance | null;
   /**
    * 10-to-90% rise time in nanoseconds. Undefined or 0 means the edge is
    * treated as instantaneous (the legacy behavior before slew support).

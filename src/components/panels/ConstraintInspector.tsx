@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCL } from "@/components/panels/ComponentLibrary";
+import { IconCL } from "@/components/panels/icons";
 import { useTimingStore } from "@/store/useTimingStore";
 import type { AnySignal } from "@/types/signal";
 import type { Constraint, ConstraintType, SignalReference } from "@/types/constraint";
