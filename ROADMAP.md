@@ -36,6 +36,10 @@ This document outlines the Minimum Viable Product (MVP) phases for the client-si
 - [ ] **Draw Constraints:** Render horizontal arrow markers with vertical reference ticks for active constraints (e.g., spanning from a clock falling edge to a data bus transition).
 - [ ] **Visual Testing:** Verify the UI successfully mounts and renders the static 6502 and eZ80 mock data into visually accurate timing diagrams.
 
+## Post-MVP increments
+
+- **Rise/fall time support** *(landed: `openspec/changes/add-rise-fall-time-support`)*: `BaseSignal` gained optional `riseTimeNs` / `fallTimeNs`; the solver now models edges as `{startNs, midNs, endNs}` intervals and selects the conservative worst-case endpoint per constraint type (SETUP: anchor `start` ↔ target `end`; HOLD: opposite; PROP_DELAY: both `end`). The W65C02S demo was retuned so `tADS` remains the single FAIL after the math change, and the waveform renderer draws true sloped edges proportional to slew.
+
 ## Phase 5: The Interactive UI (The Polish)
 **Goal:** Build the surrounding application layout and wire up user inputs to drive the visualizations in real-time.
 

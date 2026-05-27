@@ -27,5 +27,9 @@ export interface Constraint {
   
   // Computed by the engine, consumed by the UI
   status?: 'PASS' | 'FAIL' | 'UNRESOLVED';
-  calculatedMarginNs?: number; 
+  calculatedMarginNs?: number;
+  worstWindow?: {
+    anchorTimeNs: number;
+    targetTimeNs: number;
+  };
 }

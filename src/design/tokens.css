@@ -1,0 +1,103 @@
+/**
+ * dt-solver design tokens — CSS custom properties.
+ *
+ * Mirrors `docs/design-system/tokens.md` and `tokens.ts`. Use these
+ * vars in raw CSS / Tailwind arbitrary values; use `tokens.ts` in
+ * JSX. They MUST stay in sync — see `tokens.md` § 0.
+ */
+
+:root {
+  /* 1.1 — surfaces */
+  --color-surface-bg-0: #0a0e14;
+  --color-surface-bg-1: #0d1117;
+  --color-surface-bg-2: #11161e;
+
+  /* 1.2 — lines */
+  --color-line-strong: rgba(30, 41, 59, 0.8);
+  --color-line-med:    rgba(30, 41, 59, 0.6);
+  --color-line-weak:   rgba(30, 41, 59, 0.4);
+
+  /* 1.3 — text */
+  --color-text-primary:     #f1f5f9;
+  --color-text-body:        #cbd5e1;
+  --color-text-secondary:   #94a3b8;
+  --color-text-caption:     #64748b;
+  --color-text-disabled:    #475569;
+  --color-text-placeholder: #334155;
+
+  /* 1.4 — status dot hexes (full recipe uses Tailwind classes) */
+  --color-status-pass-dot:       #34d399;
+  --color-status-fail-dot:       #f87171;
+  --color-status-unresolved-dot: #fbbf24;
+
+  /* 1.5 — role accents */
+  --color-role-anchor:      #fde047;
+  --color-role-target:      #22d3ee;
+  --color-role-anchor-wash: rgba(253, 224, 71, 0.02);
+  --color-role-target-wash: rgba(34, 211, 238, 0.02);
+
+  /* 1.6 — signal palette */
+  --color-signal-cyan:   #22d3ee;
+  --color-signal-amber:  #f59e0b;
+  --color-signal-violet: #a78bfa;
+  --color-signal-pink:   #f472b6;
+  --color-signal-lime:   #a3e635;
+
+  /* 2 — type */
+  --font-sans: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --type-title-lg-size:    20px;
+  --type-title-md-size:    15px;
+  --type-body-md-size:     12.5px;
+  --type-body-sm-size:     11px;
+  --type-mono-value-size:  12px;
+  --type-mono-caption-size: 10.5px;
+  --type-caption-upper-size: 10px;
+  --type-caption-kbd-size: 9.5px;
+  --type-caption-upper-tracking: 0.18em;
+
+  /* 3 — spacing */
+  --space-0:  0;
+  --space-2:  2px;
+  --space-6:  6px;
+  --space-8:  8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-28: 28px;
+
+  /* 4 — radii / strokes / elevation */
+  --radius-none: 0;
+  --radius-sm:   2px;
+  --radius-full: 9999px;
+
+  --stroke-hairline: 1px solid var(--color-line-strong);
+  --stroke-divider:  1px solid var(--color-line-med);
+  --stroke-row:      1px solid var(--color-line-weak);
+  --stroke-trace:    1.6;
+  --stroke-icon:     1.75;
+
+  --elevation-flat:     none;
+  --elevation-modal:    0 30px 90px -20px rgba(0, 0, 0, 0.8);
+  --elevation-backdrop: rgba(2, 6, 12, 0.66);
+  --elevation-backdrop-blur: 4px;
+
+  /* 6 — chrome sizes */
+  --size-toolbar:        40px;
+  --size-modal-bar:      56px;
+  --size-footer-status:  28px;
+  --size-row-inspector:  40px;
+  --size-row-waveform:   70px;
+  --size-row-waveform-trace:  28px;
+  --size-row-waveform-header: 38px;
+  --size-sidebar-w:      300px;
+  --size-modal-w:        1140px;
+  --size-modal-h:        860px;
+  --size-preview-h-min:  320px;
+
+  /* 8 — motion */
+  --motion-tint:   120ms;
+  --motion-reveal: 160ms;
+  --motion-rotate: 200ms;
+}

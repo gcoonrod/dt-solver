@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vitest coverage output (already git-ignored).
+    "coverage/**",
+    // .remember
+    ".remember/**",
   ]),
 ]);
 
