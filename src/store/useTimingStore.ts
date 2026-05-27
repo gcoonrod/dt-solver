@@ -277,19 +277,20 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     const listRes = await fetch("/api/ics");
     if (!listRes.ok) return;
     const list = await listRes.json() as { id: string }[];
-    const definitions: ICDefinition[] = [];
-    for (const item of list) {
-      const res = await fetch(`/api/ics/${item.id}`);
-      if (!res.ok) continue;
-      const row = await res.json() as { data: ICDefinition };
-      definitions.push(row.data);
-    }
-    set({ icLibrary: definitions });
+    const results = await Promise.all(
+      list.map(async (item) => {
+        const res = await fetch(`/api/ics/${item.id}`);
+        if (!res.ok) return null;
+        const row = await res.json() as { data: ICDefinition };
+        return row.data;
+      }),
+    );
+    set({ icLibrary: results.filter((d): d is ICDefinition => d !== null) });
   },
 
   importSignalFromIC(icId: string, templateId: string, signal: SignalTemplate) {
     const freshId = `import-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const { templateId: _, ...rest } = signal;
+    const { templateId: _, pin: _pin, ...rest } = signal;
     const imported: AnySignal = {
       ...rest,
       id: freshId,

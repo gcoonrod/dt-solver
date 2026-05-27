@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useTimingStore } from "@/store/useTimingStore";
 import type { ICDefinition, SignalTemplate } from "@/types/ic";
-import { IconCL } from "./ComponentLibrary";
+import { IconCL } from "./icons";
 
 const signalIconName = (type: string): string =>
   type === "CLOCK" ? "square-wave" : type === "BUS" ? "bus" : "pulse";
