@@ -141,7 +141,7 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
     set({ cursorTimeNs: timeNs });
   },
   setViewport(tMinNs, tMaxNs) {
-    set({ tMinNs, tMaxNs });
+    set({ tMinNs, tMaxNs, isDirty: true });
   },
   hoverConstraint(id) {
     set({ hoveredConstraintId: id });
@@ -179,33 +179,36 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
 
   async fetchProfileList() {
     const res = await fetch("/api/profiles");
+    if (!res.ok) return;
     const list = await res.json() as ProfileListItem[];
     set({ profileList: list });
   },
 
   async loadProfile(id: string) {
     set({ isLoading: true });
-    const res = await fetch(`/api/profiles/${id}`);
-    if (!res.ok) {
+    try {
+      const res = await fetch(`/api/profiles/${id}`);
+      if (!res.ok) return;
+      const row = await res.json() as { id: string; name: string; description: string | null; data: { signals: AnySignal[]; constraints: Constraint[]; viewport: { tMinNs: number; tMaxNs: number } } };
+      const profile: TimingProfile = {
+        id: row.id,
+        name: row.name,
+        description: row.description ?? "",
+        signals: row.data.signals,
+        constraints: row.data.constraints,
+        defaultWindowNs: row.data.viewport,
+      };
+      get().setActiveProfile(profile);
+      set({ profileId: row.id, isDirty: false });
+    } finally {
       set({ isLoading: false });
-      return;
     }
-    const row = await res.json() as { id: string; name: string; description: string | null; data: { signals: AnySignal[]; constraints: Constraint[]; viewport: { tMinNs: number; tMaxNs: number } } };
-    const profile: TimingProfile = {
-      id: row.id,
-      name: row.name,
-      description: row.description ?? "",
-      signals: row.data.signals,
-      constraints: row.data.constraints,
-      defaultWindowNs: row.data.viewport,
-    };
-    get().setActiveProfile(profile);
-    set({ profileId: row.id, isDirty: false, isLoading: false });
   },
 
   async saveProfile() {
     const s = get();
-    if (!s.profileId) return;
+    if (!s.profileId || !s.isDirty) return;
+    const savingProfileId = s.profileId;
     set({ isSaving: true });
     try {
       const data = {
@@ -213,12 +216,12 @@ export const useTimingStore = create<TimingState>()((set, get) => ({
         constraints: s.constraints,
         viewport: { tMinNs: s.tMinNs, tMaxNs: s.tMaxNs },
       };
-      const res = await fetch(`/api/profiles/${s.profileId}`, {
+      const res = await fetch(`/api/profiles/${savingProfileId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: s.activeProfile.name, data }),
       });
-      if (res.ok) {
+      if (res.ok && get().profileId === savingProfileId) {
         set({ isDirty: false });
         get().fetchProfileList();
       }

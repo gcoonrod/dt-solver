@@ -37,7 +37,7 @@ export default function ProfileBar({ saveNow }: ProfileBarProps) {
 
   const handleSwitch = async (id: string) => {
     setShowSwitcher(false);
-    if (isDirty) saveNow();
+    if (isDirty) await saveNow();
     await loadProfile(id);
   };
 

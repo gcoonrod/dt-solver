@@ -15,11 +15,11 @@ export function usePersistence() {
   useEffect(() => {
     mountedRef.current = true;
     const store = useTimingStore.getState();
-    store.fetchProfileList().then(() => {
+    store.fetchProfileList().then(async () => {
       if (!mountedRef.current) return;
       const list = useTimingStore.getState().profileList;
       if (list.length > 0) {
-        store.loadProfile(list[0].id);
+        await store.loadProfile(list[0].id);
       } else {
         useTimingStore.setState({ isLoading: false });
       }
@@ -44,11 +44,14 @@ export function usePersistence() {
 
       prevSignalsRef.current = state.signals;
       prevConstraintsRef.current = state.constraints;
+      const targetProfileId = state.profileId;
 
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        if (mountedRef.current) {
-          useTimingStore.getState().saveProfile();
+        if (!mountedRef.current) return;
+        const current = useTimingStore.getState();
+        if (current.isDirty && current.profileId === targetProfileId) {
+          current.saveProfile();
         }
       }, AUTO_SAVE_DELAY_MS);
     });
@@ -61,7 +64,7 @@ export function usePersistence() {
   const saveNow = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
-    useTimingStore.getState().saveProfile();
+    return useTimingStore.getState().saveProfile();
   }, []);
 
   return { saveNow };

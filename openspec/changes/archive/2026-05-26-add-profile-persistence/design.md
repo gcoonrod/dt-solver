@@ -26,9 +26,9 @@ Key constraints:
 
 ### 1. Persistence lives in a hook, not in the store
 
-**Choice:** A `usePersistence` hook mounted once in `page.tsx` handles the API calls, debounce timer, and dirty tracking. The store itself gets thin actions (`loadProfile`, `saveProfile`) but no `fetch` calls or timers.
+**Choice:** A `usePersistence` hook mounted once in `page.tsx` manages the debounce timer and initial load. The store's async actions (`loadProfile`, `saveProfile`, `fetchProfileList`, `createProfile`, `deleteProfile`) contain the `fetch` calls directly, while the hook subscribes to state changes and arms/fires the auto-save timer.
 
-**Why:** Keeps the store pure (synchronous state + solver). Side effects (fetch, timers) live in React lifecycle where they're naturally cleaned up. The hook subscribes to the store via `useTimingStore.subscribe()` to detect mutations.
+**Why:** Keeping fetch in the store actions makes them callable from any component (not just the hook). The hook's job is lifecycle management: initial load on mount, debounce scheduling, and cleanup.
 
 ### 2. Store starts with a loading state, not hardcoded data
 
@@ -40,9 +40,9 @@ Key constraints:
 
 ### 3. Dirty tracking via a generation counter, not deep comparison
 
-**Choice:** The store tracks a `generation` number that increments on every domain mutation (addSignal, removeSignal, addConstraint, removeConstraint). A separate `savedGeneration` records the generation at last save. `isDirty = generation !== savedGeneration`.
+**Choice:** Domain mutations (`addSignal`, `removeSignal`, `addConstraint`, `removeConstraint`, `setViewport`) set `isDirty: true` directly. The `usePersistence` hook tracks previous `signals`/`constraints` refs to detect actual changes and arm the debounce timer. `saveProfile` clears `isDirty` only if the profile hasn't changed since the save started.
 
-**Why:** Deep-comparing signal/constraint arrays on every mutation is expensive and fragile. A counter is O(1) and never produces false negatives. False positives (dirty after a no-op edit) are acceptable — the save is cheap.
+**Why:** Simple boolean flag + ref comparison is sufficient for a single-user app. The profileId guard in saveProfile prevents stale saves after profile switches.
 
 ### 4. Debounce in the hook, not middleware
 
